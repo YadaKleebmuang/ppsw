@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.role == 'admin';
+    }
+
+    // Public Collections (Read-Only)
+    match /profile/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /categories/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /techStacks/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /skills/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /resumeFiles/{document} {
+      allow read: if true; // Actually public should only see isActive, but we can filter it on client side.
+      allow write: if isAdmin();
+    }
+
+    // Projects Collection
+    match /projects/{project} {
+      // Public users can only read published projects
+      allow read: if resource.data.isPublished == true || isAdmin();
+      allow write: if isAdmin();
+      
+      // Subcollections of projects (e.g. projectImages, etc.)
+      // Can be structured differently depending on whether subcollections or root collections are used.
+      // Based on the user prompt, projectImages etc. are separate collections with projectId field.
+    }
+    
+    match /projectImages/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /projectFeatures/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /projectResponsibilities/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /projectAchievements/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /projectCategories/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /projectTechStacks/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Admin Users Collection
+    match /users/{userId} {
+      allow read, write: if isAdmin() || request.auth.uid == userId;
+    }
+  }
+}

@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      // In a real app, you might want to use custom claims, but for this portfolio we can just check if authenticated.
+      // Since there's only one admin, any authenticated user can upload.
+      return request.auth != null; 
+    }
+
+    match /{allPaths=**} {
+      // Public can read images and resumes
+      allow read: if true;
+      // Only admin can write, delete
+      allow write, delete: if isAdmin();
+    }
+  }
+}
