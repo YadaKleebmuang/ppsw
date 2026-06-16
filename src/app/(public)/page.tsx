@@ -3,6 +3,7 @@ import { ArrowRight, Download } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { ProjectCard } from '@/features/projects/components/ProjectCard';
 import { getPublishedProjects } from '@/features/projects/services/project.service';
+import { getProfile } from '@/features/profile/services/profile.service';
 import { ProjectFormValues } from '@/features/projects/schemas/project.schema';
 
 export const metadata = {
@@ -15,17 +16,17 @@ export const dynamic = 'force-dynamic';
 export default async function HomePage() {
   const projects = await getPublishedProjects() as (ProjectFormValues & { id: string })[];
   const featuredProjects = projects.slice(0, 2);
+  const profile = await getProfile();
 
   return (
     <div className="flex flex-col space-y-32 py-16">
       {/* Hero Section */}
       <section className="flex flex-col space-y-6">
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 leading-tight">
-          Hi, I&apos;m <span className="text-black dark:text-white">Your Name</span>
+          Hi, I&apos;m <span className="text-black dark:text-white">{profile?.fullName || 'Your Name'}</span>
         </h1>
         <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-          I&apos;m a passionate developer specializing in building exceptional digital experiences. 
-          Currently, I&apos;m focused on building accessible, human-centered products.
+          {profile?.headline || "I'm a passionate developer specializing in building exceptional digital experiences."}
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 pt-8">
@@ -33,10 +34,12 @@ export default async function HomePage() {
             ดูผลงานทั้งหมด (View Projects)
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
-          <Link href="/resume" className={buttonVariants({ variant: "outline", size: "lg", className: "rounded-full px-8" })}>
-            ดาวน์โหลดเรซูเม่ (Download Resume)
-            <Download className="ml-2 h-4 w-4" />
-          </Link>
+          {profile?.resumeUrl && (
+            <a href={profile.resumeUrl} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "outline", size: "lg", className: "rounded-full px-8" })}>
+              ดาวน์โหลดเรซูเม่ (Download Resume)
+              <Download className="ml-2 h-4 w-4" />
+            </a>
+          )}
         </div>
       </section>
 

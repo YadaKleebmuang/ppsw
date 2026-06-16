@@ -10,6 +10,13 @@ export const profileSchema = z.object({
   linkedin: z.string().url().optional().or(z.literal('')),
   resumeUrl: z.string().optional(),
   profileImageUrl: z.string().optional(),
+  educationSchool: z.string().optional(),
+  educationDegree: z.string().optional(),
+  educationYear: z.string().optional(),
+  educationGpa: z.string().optional(),
+  skillsFrontend: z.string().optional(),
+  skillsBackend: z.string().optional(),
+  skillsOther: z.string().optional(),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { uploadImageAction } from '@/app/actions/upload';
+import { compressImage } from '@/utils/imageCompression';
 import { auth } from '@/lib/firebase/client';
 
 import { saveProfile } from '../services/profile.service';
@@ -34,6 +35,13 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
       linkedin: '',
       resumeUrl: '',
       profileImageUrl: '',
+      educationSchool: '',
+      educationDegree: '',
+      educationYear: '',
+      educationGpa: '',
+      skillsFrontend: '',
+      skillsBackend: '',
+      skillsOther: '',
     },
   });
 
@@ -47,8 +55,10 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 
     setLoading(true);
     try {
+      const compressedFile = await compressImage(file);
+
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       
       const result = await uploadImageAction(formData);
       if (!result.success) throw new Error(result.error);
@@ -104,7 +114,47 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+        <div className="space-y-2 md:col-span-2">
+          <h3 className="text-lg font-medium">Education</h3>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">School / University</label>
+          <Input {...form.register('educationSchool')} placeholder="e.g. King Mongkut's University..." />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Degree / Major</label>
+          <Input {...form.register('educationDegree')} placeholder="e.g. Computer Science" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Year</label>
+          <Input {...form.register('educationYear')} placeholder="e.g. 2020 - 2024" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">GPA</label>
+          <Input {...form.register('educationGpa')} placeholder="e.g. 3.50" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
+        <div className="space-y-2 md:col-span-3">
+          <h3 className="text-lg font-medium">Skills (Comma separated)</h3>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Frontend</label>
+          <Textarea {...form.register('skillsFrontend')} placeholder="e.g. Next.js, React, Tailwind CSS" rows={3} />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Backend</label>
+          <Textarea {...form.register('skillsBackend')} placeholder="e.g. Node.js, Python, Firebase" rows={3} />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Other</label>
+          <Textarea {...form.register('skillsOther')} placeholder="e.g. Git, Figma, Docker" rows={3} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
         <div className="space-y-2">
           <label className="text-sm font-medium">Email Address</label>
           <Input type="email" {...form.register('email')} />
