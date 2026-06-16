@@ -48,7 +48,7 @@ export default async function AdminProjects() {
             {projects.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                  No projects found. Click "Add Project" to create one.
+                  No projects found. Click &quot;Add Project&quot; to create one.
                 </TableCell>
               </TableRow>
             ) : projects.map((project) => (

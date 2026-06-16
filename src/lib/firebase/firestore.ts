@@ -8,9 +8,6 @@ import {
   updateDoc, 
   deleteDoc, 
   query, 
-  where, 
-  orderBy, 
-  limit, 
   DocumentData,
   QueryConstraint
 } from 'firebase/firestore';
@@ -36,13 +33,13 @@ export const getDocuments = async <T = DocumentData>(
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as T);
 };
 
-export const createDocument = async (collectionName: string, id: string, data: any) => {
+export const createDocument = async (collectionName: string, id: string, data: Record<string, unknown>) => {
   const docRef = doc(db, collectionName, id);
   await setDoc(docRef, { ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
   return id;
 };
 
-export const updateDocument = async (collectionName: string, id: string, data: any) => {
+export const updateDocument = async (collectionName: string, id: string, data: Record<string, unknown>) => {
   const docRef = doc(db, collectionName, id);
   await updateDoc(docRef, { ...data, updatedAt: new Date().toISOString() });
 };

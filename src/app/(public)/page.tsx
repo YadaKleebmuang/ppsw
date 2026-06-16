@@ -13,10 +13,11 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="flex flex-col space-y-6">
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 leading-tight">
-          สวัสดีครับ,<br />ผมเป็นนักพัฒนาซอฟต์แวร์
+          Hi, I&apos;m <span className="text-black dark:text-white">Your Name</span>
         </h1>
-        <p className="text-xl md:text-2xl text-gray-500 font-light max-w-2xl">
-          Hello, I'm a Software Engineer passionate about building scalable web applications and intuitive user experiences.
+        <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
+          I&apos;m a passionate developer specializing in building exceptional digital experiences. 
+          Currently, I&apos;m focused on building accessible, human-centered products.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 pt-8">
@@ -33,6 +34,16 @@ export default function HomePage() {
 
       {/* Featured Projects Preview Section */}
       <section className="space-y-12">
+        <div className="mx-auto max-w-2xl lg:text-center">
+            <h2 className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100">My Work</h2>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+              Projects I&apos;ve built
+            </p>
+            <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
+              Here are some of the projects I&apos;ve worked on. Each project is a unique piece of development that solved a specific problem.
+            </p>
+        </div>
+        
         <div className="flex items-end justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">ผลงานแนะนำ</h2>
@@ -62,7 +73,7 @@ export default function HomePage() {
       <section className="bg-black text-white rounded-3xl p-12 text-center space-y-6">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight">สนใจร่วมงานด้วยกัน?</h2>
         <p className="text-gray-400 text-lg max-w-xl mx-auto">
-          I'm currently looking for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!
+          I&apos;m currently looking for new opportunities. Whether you have a question or just want to say hi, I&apos;ll try my best to get back to you!
         </p>
         <div className="pt-4">
           <Link href="/contact" className={buttonVariants({ variant: "secondary", size: "lg", className: "rounded-full px-8 bg-white text-black hover:bg-gray-200" })}>

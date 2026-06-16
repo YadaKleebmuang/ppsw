@@ -27,8 +27,8 @@ export function LoginForm() {
     try {
       await loginWithEmail(data.email, data.password);
       router.push('/admin/dashboard');
-    } catch (err: any) {
-      console.error(err);
+    } catch (error: unknown) {
+      console.error(error);
       setError('เข้าสู่ระบบล้มเหลว กรุณาตรวจสอบอีเมลและรหัสผ่าน');
     } finally {
       setIsLoading(false);

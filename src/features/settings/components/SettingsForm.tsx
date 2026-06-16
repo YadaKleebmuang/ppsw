@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { settingsSchema, SettingsFormValues } from '../schemas/settings.schema';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ export function SettingsForm({ initialData, onSubmit }: SettingsFormProps) {
   );
 
   const form = useForm<SettingsFormValues>({
-    resolver: zodResolver(settingsSchema) as any,
+    resolver: zodResolver(settingsSchema) as unknown as Resolver<SettingsFormValues>,
     defaultValues: initialData || {
       categories: ['Web App', 'Mobile App', 'Chatbot', 'Other'],
       skills: [],

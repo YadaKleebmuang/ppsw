@@ -1,6 +1,6 @@
-import { buttonVariants } from '@/components/ui/button';
-import { Mail, MapPin } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
+import { buttonVariants } from '@/components/ui/button';
 
 export const metadata = {
   title: 'Contact | Personal Portfolio',

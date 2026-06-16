@@ -1,18 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, Controller, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { projectSchema, ProjectFormValues } from '../schemas/project.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import dynamic from 'next/dynamic';
 import { uploadFile } from '@/lib/firebase/storage';
-import 'react-quill/dist/quill.snow.css';
-
-// Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 interface ProjectFormProps {
   initialData?: ProjectFormValues & { id?: string };
@@ -24,7 +19,7 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema) as any,
+    resolver: zodResolver(projectSchema) as unknown as Resolver<ProjectFormValues>,
     defaultValues: initialData || {
       slug: '',
       titleTh: '',
@@ -108,16 +103,8 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Full Content (Rich Text)</label>
-        <Controller
-          name="contentTh"
-          control={form.control}
-          render={({ field }) => (
-            <div className="bg-white rounded-md">
-              <ReactQuill theme="snow" value={field.value || ''} onChange={field.onChange} />
-            </div>
-          )}
-        />
+        <label className="text-sm font-medium">Full Content (Markdown / Text)</label>
+        <Textarea {...form.register('contentTh')} rows={10} placeholder="Write your project details here..." />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

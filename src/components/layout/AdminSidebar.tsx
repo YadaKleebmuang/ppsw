@@ -4,10 +4,7 @@ import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
   FolderOpen, 
-  Tags, 
-  Layers, 
   User, 
-  FileText,
   Settings
 } from 'lucide-react';
 
