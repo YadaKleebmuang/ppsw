@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { ProjectImageFormValues } from '../../schemas/project.schema';
+import { ProjectImageFormValues } from '../schemas/project.schema';
 
 interface ProjectCardProps {
   slug: string;
