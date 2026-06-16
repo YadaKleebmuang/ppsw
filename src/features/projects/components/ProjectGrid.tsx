@@ -12,6 +12,7 @@ interface Project {
   shortDescriptionTh: string;
   tags: string[];
   category: string;
+  coverImageUrl?: string;
 }
 
 export function ProjectGrid({ projects }: { projects: Project[] }) {
@@ -21,6 +22,8 @@ export function ProjectGrid({ projects }: { projects: Project[] }) {
     { id: 'All', label: 'ทั้งหมด (All)' },
     { id: 'Web App', label: 'เว็บแอปพลิเคชัน (Web App)' },
     { id: 'Chatbot', label: 'แชทบอท (Chatbot)' },
+    { id: 'Mobile App', label: 'โมบายแอปพลิเคชัน (Mobile App)' },
+    { id: 'Other', label: 'อื่นๆ (Other)' }
   ];
 
   const filteredProjects = activeCategory === 'All' 
@@ -48,7 +51,7 @@ export function ProjectGrid({ projects }: { projects: Project[] }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredProjects.map(project => (
-          <ProjectCard key={project.id} {...project} />
+          <ProjectCard key={project.id} {...project} coverImage={project.coverImageUrl} />
         ))}
         
         {filteredProjects.length === 0 && (

@@ -9,12 +9,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { uploadFile } from '@/lib/firebase/storage';
 
+import { createProject, updateProject } from '../services/project.service';
+import { useRouter } from 'next/navigation';
+
 interface ProjectFormProps {
   initialData?: ProjectFormValues & { id?: string };
-  onSubmit: (data: ProjectFormValues) => Promise<void>;
+  projectId?: string;
 }
 
-export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
+export function ProjectForm({ initialData, projectId }: ProjectFormProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -55,7 +59,13 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
   const onSubmitForm: SubmitHandler<ProjectFormValues> = async (data) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      if (projectId) {
+        await updateProject(projectId, data);
+      } else {
+        await createProject(data);
+      }
+      router.push('/admin/projects');
+      router.refresh();
     } catch (error) {
       console.error('Form submission error', error);
       alert('Failed to save project');

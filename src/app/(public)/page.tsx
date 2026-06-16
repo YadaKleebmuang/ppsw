@@ -1,13 +1,21 @@
 import Link from 'next/link';
 import { ArrowRight, Download } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
+import { ProjectCard } from '@/features/projects/components/ProjectCard';
+import { getPublishedProjects } from '@/features/projects/services/project.service';
+import { ProjectFormValues } from '@/features/projects/schemas/project.schema';
 
 export const metadata = {
   title: 'Home | Personal Portfolio',
   description: 'Welcome to my personal portfolio showcase.',
 };
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  const projects = await getPublishedProjects() as (ProjectFormValues & { id: string })[];
+  const featuredProjects = projects.slice(0, 2);
+
   return (
     <div className="flex flex-col space-y-32 py-16">
       {/* Hero Section */}
@@ -55,17 +63,14 @@ export default function HomePage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Skeleton/Placeholder for now. Will be replaced by ProjectCard */}
-          <div className="group relative block overflow-hidden rounded-xl bg-gray-100 aspect-video transition-all hover:shadow-xl">
-             <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-               <span className="font-medium text-lg">COOS - Online Studio</span>
-             </div>
-          </div>
-          <div className="group relative block overflow-hidden rounded-xl bg-gray-100 aspect-video transition-all hover:shadow-xl">
-             <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-               <span className="font-medium text-lg">SureAboutIt Chatbot</span>
-             </div>
-          </div>
+          {featuredProjects.map(project => (
+            <ProjectCard key={project.id} {...project} coverImage={project.coverImageUrl} />
+          ))}
+          {featuredProjects.length === 0 && (
+            <div className="col-span-full py-12 text-center text-gray-500">
+              ยังไม่มีผลงานที่เผยแพร่
+            </div>
+          )}
         </div>
       </section>
 

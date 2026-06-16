@@ -9,12 +9,7 @@ export const metadata = {
 };
 
 export default function NewProjectPage() {
-  const handleSubmit = async (data: ProjectFormValues) => {
-    'use server';
-    await createProject(data);
-    revalidatePath('/admin/projects');
-    redirect('/admin/projects');
-  };
+  // Form logic moved to Client Component to retain Firebase Auth context
 
   return (
     <div className="space-y-6">
@@ -24,7 +19,7 @@ export default function NewProjectPage() {
       </div>
 
       <div className="bg-white p-6 rounded-md border">
-        <ProjectForm onSubmit={handleSubmit} />
+        <ProjectForm />
       </div>
     </div>
   );

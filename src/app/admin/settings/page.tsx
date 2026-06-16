@@ -12,11 +12,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminSettings() {
   const settings = await getSettings();
 
-  const handleSubmit = async (data: SettingsFormValues) => {
-    'use server';
-    await saveSettings(data);
-    revalidatePath('/admin/settings');
-  };
+  // Form logic moved to Client Component to retain Firebase Auth context
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -26,7 +22,7 @@ export default async function AdminSettings() {
       </div>
 
       <div className="bg-white p-6 rounded-md border shadow-sm">
-        <SettingsForm initialData={settings} onSubmit={handleSubmit} />
+        <SettingsForm initialData={settings} />
       </div>
     </div>
   );

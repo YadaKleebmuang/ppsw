@@ -9,12 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { uploadFile } from '@/lib/firebase/storage';
 
+import { saveProfile } from '../services/profile.service';
+import { useRouter } from 'next/navigation';
+
 interface ProfileFormProps {
   initialData?: ProfileFormValues | null;
-  onSubmit: (data: ProfileFormValues) => Promise<void>;
 }
 
-export function ProfileForm({ initialData, onSubmit }: ProfileFormProps) {
+export function ProfileForm({ initialData }: ProfileFormProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
@@ -59,7 +62,9 @@ export function ProfileForm({ initialData, onSubmit }: ProfileFormProps) {
   const handleSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      await saveProfile(data);
+      router.push('/admin/profile');
+      router.refresh();
     } catch (error) {
       console.error('Form submission error', error);
       alert('Failed to save profile');

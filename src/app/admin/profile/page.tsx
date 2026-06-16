@@ -12,11 +12,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminProfile() {
   const profile = await getProfile();
 
-  const handleSubmit = async (data: ProfileFormValues) => {
-    'use server';
-    await saveProfile(data);
-    revalidatePath('/admin/profile');
-  };
+  // Form logic moved to Client Component to retain Firebase Auth context
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -26,7 +22,7 @@ export default async function AdminProfile() {
       </div>
 
       <div className="bg-white p-6 rounded-md border shadow-sm">
-        <ProfileForm initialData={profile} onSubmit={handleSubmit} />
+        <ProfileForm initialData={profile} />
       </div>
     </div>
   );

@@ -8,12 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2 } from 'lucide-react';
 
+import { saveSettings } from '../services/settings.service';
+import { useRouter } from 'next/navigation';
+
 interface SettingsFormProps {
   initialData?: SettingsFormValues | null;
-  onSubmit: (data: SettingsFormValues) => Promise<void>;
 }
 
-export function SettingsForm({ initialData, onSubmit }: SettingsFormProps) {
+export function SettingsForm({ initialData }: SettingsFormProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [categories, setCategories] = useState<string[]>(
@@ -47,7 +50,9 @@ export function SettingsForm({ initialData, onSubmit }: SettingsFormProps) {
         categories,
         techStacks,
       };
-      await onSubmit(mappedData);
+      await saveSettings(mappedData);
+      router.push('/admin/settings');
+      router.refresh();
     } catch (error) {
       console.error('Save error', error);
       alert('Failed to save settings');

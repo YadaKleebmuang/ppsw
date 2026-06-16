@@ -9,19 +9,15 @@ export const metadata = {
   title: 'Edit Project | Admin',
 };
 
-export default async function EditProjectPage({ params }: { params: { id: string } }) {
-  const project = await getProject(params.id) as (ProjectFormValues & { id: string }) | null;
+export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const project = await getProject(resolvedParams.id) as (ProjectFormValues & { id: string }) | null;
 
   if (!project) {
     notFound();
   }
 
-  const handleSubmit = async (data: ProjectFormValues) => {
-    'use server';
-    await updateProject(params.id, data);
-    revalidatePath('/admin/projects');
-    redirect('/admin/projects');
-  };
+  // Form logic moved to Client Component to retain Firebase Auth context
 
   return (
     <div className="space-y-6">
@@ -31,7 +27,7 @@ export default async function EditProjectPage({ params }: { params: { id: string
       </div>
 
       <div className="bg-white p-6 rounded-md border">
-        <ProjectForm initialData={project} onSubmit={handleSubmit} />
+        <ProjectForm initialData={project} projectId={resolvedParams.id} />
       </div>
     </div>
   );

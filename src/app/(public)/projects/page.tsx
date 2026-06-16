@@ -1,41 +1,16 @@
 import { ProjectGrid } from '@/features/projects/components/ProjectGrid';
+import { getPublishedProjects } from '@/features/projects/services/project.service';
+import { ProjectFormValues } from '@/features/projects/schemas/project.schema';
 
 export const metadata = {
   title: 'Projects | Personal Portfolio',
   description: 'A showcase of my software development projects.',
 };
 
-export default function ProjectsPage() {
-  // In a real scenario, these would be fetched from Firestore
-  const mockProjects = [
-    {
-      id: '1',
-      slug: 'coos-online-studio',
-      titleTh: 'COOS - ระบบจัดการสตูดิโอออนไลน์',
-      titleEn: 'COOS - Online Studio Management System',
-      shortDescriptionTh: 'ระบบจัดการสตูดิโอและการสั่งซื้อออนไลน์',
-      tags: ['Nuxt 3', 'Express.js', 'MySQL'],
-      category: 'Web App',
-    },
-    {
-      id: '2',
-      slug: 'sure-about-it-chatbot',
-      titleTh: 'SureAboutIt – แชทบอทให้ความรู้เรื่องเพศศึกษา',
-      titleEn: 'SureAboutIt – Sexual Health Education Chatbot',
-      shortDescriptionTh: 'แชทบอทให้ความรู้เรื่องเพศศึกษาสำหรับวัยรุ่นและบุคคลทั่วไป',
-      tags: ['Dialogflow', 'LINE API'],
-      category: 'Chatbot',
-    },
-    {
-      id: '3',
-      slug: 'life-management-platform',
-      titleTh: 'แพลตฟอร์มจัดการชีวิตส่วนตัว',
-      titleEn: 'Life Management Platform',
-      shortDescriptionTh: 'ระบบจัดการบัญชีและชีวิตส่วนตัวบน Vercel',
-      tags: ['Next.js', 'Tailwind'],
-      category: 'Web App',
-    }
-  ];
+export const dynamic = 'force-dynamic';
+
+export default async function ProjectsPage() {
+  const projects = await getPublishedProjects() as (ProjectFormValues & { id: string })[];
 
   return (
     <div className="py-12 space-y-12">
@@ -46,7 +21,7 @@ export default function ProjectsPage() {
         </p>
       </section>
 
-      <ProjectGrid projects={mockProjects} />
+      <ProjectGrid projects={projects} />
     </div>
   );
 }

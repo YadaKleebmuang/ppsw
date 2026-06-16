@@ -5,12 +5,17 @@ import {
   updateDocument, 
   deleteDocument 
 } from '@/lib/firebase/firestore';
+import { where } from 'firebase/firestore';
 import { ProjectFormValues } from '../schemas/project.schema';
 
 const COLLECTION_NAME = 'projects';
 
 export const getProjects = async () => {
   return await getDocuments(COLLECTION_NAME);
+};
+
+export const getPublishedProjects = async () => {
+  return await getDocuments(COLLECTION_NAME, [where('isPublished', '==', true)]);
 };
 
 export const getProject = async (id: string) => {
