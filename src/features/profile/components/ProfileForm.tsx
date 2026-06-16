@@ -7,8 +7,6 @@ import { profileSchema, ProfileFormValues } from '../schemas/profile.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { uploadImageAction } from '@/app/actions/upload';
-import { compressImage } from '@/utils/imageCompression';
 import { auth } from '@/lib/firebase/client';
 
 import { saveProfile } from '../services/profile.service';
@@ -21,7 +19,6 @@ interface ProfileFormProps {
 export function ProfileForm({ initialData }: ProfileFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -45,32 +42,6 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
     },
   });
 
-  const handleFileUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>, 
-    field: 'profileImageUrl', 
-    setLoading: (val: boolean) => void,
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setLoading(true);
-    try {
-      const compressedFile = await compressImage(file);
-
-      const formData = new FormData();
-      formData.append('file', compressedFile);
-      
-      const result = await uploadImageAction(formData);
-      if (!result.success) throw new Error(result.error);
-      
-      form.setValue(field, result.url);
-    } catch (error) {
-      console.error(`Error uploading ${field}`, error);
-      alert('Upload failed');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true);
@@ -171,9 +142,8 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Profile Image</label>
-          <Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'profileImageUrl', setUploadingImage)} disabled={uploadingImage} />
-          {uploadingImage && <p className="text-sm text-gray-500">Uploading...</p>}
+          <label className="text-sm font-medium">Profile Image Path</label>
+          <Input type="text" {...form.register('profileImageUrl')} placeholder="/images/profile.jpg" />
           {form.watch('profileImageUrl') && (
             <img src={form.watch('profileImageUrl')} alt="Profile preview" className="mt-2 h-32 w-32 object-cover rounded-full" />
           )}

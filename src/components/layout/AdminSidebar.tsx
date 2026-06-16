@@ -11,7 +11,6 @@ import {
 const navItems = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/admin/projects', icon: FolderOpen },
-  { name: 'Categories & Skills', href: '/admin/settings', icon: Settings },
   { name: 'Profile & Resume', href: '/admin/profile', icon: User },
 ];
 

@@ -2,26 +2,32 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { ProjectImageFormValues } from '../../schemas/project.schema';
 
 interface ProjectCardProps {
   slug: string;
   titleTh: string;
   titleEn: string;
   shortDescriptionTh: string;
-  coverImage?: string;
+  images?: ProjectImageFormValues[];
   tags?: string[];
 }
 
-export function ProjectCard({ slug, titleTh, titleEn, shortDescriptionTh, coverImage, tags = [] }: ProjectCardProps) {
+export function ProjectCard({ slug, titleTh, titleEn, shortDescriptionTh, images = [], tags = [] }: ProjectCardProps) {
+  const coverImageObj = images.find(img => img.isCover) || images[0];
+  const coverImageUrl = coverImageObj?.src;
+  const altText = coverImageObj?.altTextEn || coverImageObj?.altTextTh || titleEn;
+
   return (
     <Link href={`/projects/${slug}`}>
       <Card className="group overflow-hidden border-0 bg-gray-50 hover:bg-gray-100 transition-all cursor-pointer h-full flex flex-col shadow-none">
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
-          {coverImage ? (
+          {coverImageUrl ? (
             <Image 
-              src={coverImage} 
-              alt={titleEn} 
+              src={coverImageUrl} 
+              alt={altText} 
               fill 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (

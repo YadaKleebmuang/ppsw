@@ -67,7 +67,7 @@ export default async function HomePage() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {featuredProjects.map(project => (
-            <ProjectCard key={project.id} {...project} coverImage={project.coverImageUrl} />
+            <ProjectCard key={project.id} {...project} />
           ))}
           {featuredProjects.length === 0 && (
             <div className="col-span-full py-12 text-center text-gray-500">

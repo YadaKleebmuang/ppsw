@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FolderOpen, Layers, Settings, Users } from 'lucide-react';
+import { FolderOpen, Users } from 'lucide-react';
 
 export const metadata = {
   title: 'Dashboard | Admin',
@@ -8,8 +8,6 @@ export const metadata = {
 export default function AdminDashboard() {
   const stats = [
     { name: 'Total Projects', value: '4', icon: FolderOpen },
-    { name: 'Categories', value: '3', icon: Layers },
-    { name: 'Tech Stacks', value: '12', icon: Settings },
     { name: 'Views', value: '1,024', icon: Users },
   ];
 

@@ -10,7 +10,6 @@ export function PublicNavbar() {
     { name: 'หน้าแรก (Home)', href: '/' },
     { name: 'เกี่ยวกับ (About)', href: '/about' },
     { name: 'ผลงาน (Projects)', href: '/projects' },
-    { name: 'เรซูเม่ (Resume)', href: '/resume' },
     { name: 'ติดต่อ (Contact)', href: '/contact' },
   ];
 

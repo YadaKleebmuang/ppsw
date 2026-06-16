@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getProjectBySlug } from '@/features/projects/services/project.service';
 import { ProjectFormValues } from '@/features/projects/schemas/project.schema';
@@ -23,6 +24,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!project || !project.isPublished) {
     notFound();
   }
+
+  const images = project.images || [];
+  const coverImage = images.find((img: any) => img.isCover) || images[0];
+  const galleryImages = images.filter((img: any) => img.src !== coverImage?.src).sort((a: any, b: any) => a.displayOrder - b.displayOrder);
 
   return (
     <article className="max-w-4xl mx-auto py-12 space-y-12">
@@ -55,9 +60,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
-      {project.coverImageUrl ? (
-        <div className="aspect-video w-full rounded-2xl overflow-hidden relative border">
-          <img src={project.coverImageUrl} alt={project.titleTh} className="w-full h-full object-cover" />
+      {coverImage ? (
+        <div className="aspect-video w-full rounded-2xl overflow-hidden relative border bg-gray-100">
+          <Image 
+            src={coverImage.src} 
+            alt={coverImage.altTextEn || coverImage.altTextTh || project.titleTh} 
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 896px"
+            className="object-cover" 
+          />
         </div>
       ) : (
         <div className="aspect-video w-full bg-gray-100 rounded-2xl overflow-hidden relative flex items-center justify-center border">
@@ -110,13 +122,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
-      {project.galleryUrls && project.galleryUrls.length > 0 && (
+      {galleryImages.length > 0 && (
         <div className="space-y-6 pt-8 border-t">
           <h2 className="text-2xl font-bold tracking-tight">แกลเลอรี (Gallery)</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {project.galleryUrls.map((url: string, index: number) => (
-              <div key={index} className="aspect-video rounded-xl overflow-hidden border bg-gray-50 shadow-sm hover:shadow-md transition-shadow">
-                <img src={url} alt={`${project.titleTh} - Gallery Image ${index + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+            {galleryImages.map((img: any, index: number) => (
+              <div key={index} className="aspect-video relative rounded-xl overflow-hidden border bg-gray-50 shadow-sm hover:shadow-md transition-shadow group">
+                <Image 
+                  src={img.src} 
+                  alt={img.altTextEn || img.altTextTh || `${project.titleTh} - Gallery Image ${index + 1}`} 
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                  className="object-cover hover:scale-105 transition-transform duration-500" 
+                />
               </div>
             ))}
           </div>
