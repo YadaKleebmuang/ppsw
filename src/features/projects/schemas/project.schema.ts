@@ -11,6 +11,7 @@ export const projectSchema = z.object({
   coverImageUrl: z.string().optional(),
   githubUrl: z.string().optional(),
   demoUrl: z.string().optional(),
+  galleryUrls: z.array(z.string()).default([]),
   isPublished: z.boolean().default(false),
 });
 

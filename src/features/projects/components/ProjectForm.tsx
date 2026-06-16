@@ -7,7 +7,11 @@ import { projectSchema, ProjectFormValues } from '../schemas/project.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { uploadFile } from '@/lib/firebase/storage';
+import { uploadImageAction } from '@/app/actions/upload';
+import { compressImage } from '@/utils/imageCompression';
+import { Trash2 } from 'lucide-react';
+
+import { auth } from '@/lib/firebase/client';
 
 import { createProject, updateProject } from '../services/project.service';
 import { useRouter } from 'next/navigation';
@@ -21,6 +25,7 @@ export function ProjectForm({ initialData, projectId }: ProjectFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema) as unknown as Resolver<ProjectFormValues>,
@@ -35,6 +40,7 @@ export function ProjectForm({ initialData, projectId }: ProjectFormProps) {
       coverImageUrl: '',
       githubUrl: '',
       demoUrl: '',
+      galleryUrls: [],
       isPublished: false,
     },
   });
@@ -45,15 +51,71 @@ export function ProjectForm({ initialData, projectId }: ProjectFormProps) {
 
     setUploadingImage(true);
     try {
-      const path = `projects/${Date.now()}_${file.name}`;
-      const { url } = await uploadFile(file, path);
-      form.setValue('coverImageUrl', url);
+      const compressedFile = await compressImage(file);
+      
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      
+      const result = await uploadImageAction(formData);
+      if (!result.success) throw new Error(result.error);
+      
+      form.setValue('coverImageUrl', result.url);
     } catch (error) {
       console.error('Error uploading image', error);
       alert('Failed to upload image');
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingGallery(true);
+    try {
+      const currentGallery = form.getValues('galleryUrls') || [];
+      const newUrls: string[] = [];
+      
+      // Upload compressed images with a concurrency limit of 3
+      const CONCURRENCY = 3;
+      for (let i = 0; i < files.length; i += CONCURRENCY) {
+        const batch = Array.from(files).slice(i, i + CONCURRENCY);
+        
+          const batchPromises = batch.map(async (file) => {
+          try {
+            const compressedFile = await compressImage(file);
+            
+            const formData = new FormData();
+            formData.append('file', compressedFile);
+            
+            const result = await uploadImageAction(formData);
+            if (!result.success) throw new Error(result.error);
+            
+            return result.url;
+          } catch (err) {
+            console.error('Failed to upload file', file.name, err);
+            alert(`ไม่สามารถอัปโหลดรูป ${file.name} ได้`);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(batchPromises);
+        newUrls.push(...(results.filter(url => url !== null) as string[]));
+      }
+      
+      form.setValue('galleryUrls', [...currentGallery, ...newUrls]);
+    } catch (error) {
+      console.error('Error uploading gallery', error);
+      alert('Failed to upload gallery images');
+    } finally {
+      setUploadingGallery(false);
+    }
+  };
+
+  const removeGalleryImage = (indexToRemove: number) => {
+    const currentGallery = form.getValues('galleryUrls') || [];
+    form.setValue('galleryUrls', currentGallery.filter((_, i) => i !== indexToRemove));
   };
 
   const onSubmitForm: SubmitHandler<ProjectFormValues> = async (data) => {
@@ -139,7 +201,46 @@ export function ProjectForm({ initialData, projectId }: ProjectFormProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="space-y-4 pt-6 border-t">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-medium">Project Gallery (รูปภาพเพิ่มเติม)</h3>
+            <p className="text-sm text-gray-500">อัปโหลดรูปภาพผลงานเพิ่มเติม (เลือกได้หลายรูป)</p>
+          </div>
+          <div className="relative overflow-hidden inline-block">
+            <Button type="button" variant="outline" disabled={uploadingGallery}>
+              {uploadingGallery ? 'Uploading...' : 'Add Gallery Images'}
+            </Button>
+            <Input 
+              type="file" 
+              accept="image/*" 
+              multiple 
+              onChange={handleGalleryUpload} 
+              disabled={uploadingGallery} 
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+            />
+          </div>
+        </div>
+
+        {form.watch('galleryUrls') && form.watch('galleryUrls')!.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+            {form.watch('galleryUrls')!.map((url, index) => (
+              <div key={index} className="relative group rounded-md overflow-hidden aspect-video border">
+                <img src={url} alt={`Gallery ${index}`} className="w-full h-full object-cover" />
+                <button 
+                  type="button" 
+                  onClick={() => removeGalleryImage(index)}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 pt-6 border-t">
         <input type="checkbox" id="isPublished" {...form.register('isPublished')} className="h-4 w-4" />
         <label htmlFor="isPublished" className="text-sm font-medium">Publish this project (Visible to public)</label>
       </div>

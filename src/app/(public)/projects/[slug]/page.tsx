@@ -4,7 +4,7 @@ import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getProject } from '@/features/projects/services/project.service';
+import { getProjectBySlug } from '@/features/projects/services/project.service';
 import { ProjectFormValues } from '@/features/projects/schemas/project.schema';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   let project: (ProjectFormValues & { id: string }) | null = null;
   
   try {
-    project = await getProject(resolvedParams.slug) as any;
+    project = await getProjectBySlug(resolvedParams.slug) as any;
   } catch (error) {
     console.error(error);
   }
@@ -109,6 +109,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           )}
         </div>
       </div>
+
+      {project.galleryUrls && project.galleryUrls.length > 0 && (
+        <div className="space-y-6 pt-8 border-t">
+          <h2 className="text-2xl font-bold tracking-tight">แกลเลอรี (Gallery)</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {project.galleryUrls.map((url: string, index: number) => (
+              <div key={index} className="aspect-video rounded-xl overflow-hidden border bg-gray-50 shadow-sm hover:shadow-md transition-shadow">
+                <img src={url} alt={`${project.titleTh} - Gallery Image ${index + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </article>
   );
 }

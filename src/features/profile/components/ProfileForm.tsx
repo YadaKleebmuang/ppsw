@@ -7,7 +7,8 @@ import { profileSchema, ProfileFormValues } from '../schemas/profile.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { uploadFile } from '@/lib/firebase/storage';
+import { uploadImageAction } from '@/app/actions/upload';
+import { auth } from '@/lib/firebase/client';
 
 import { saveProfile } from '../services/profile.service';
 import { useRouter } from 'next/navigation';
@@ -20,7 +21,6 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadingResume, setUploadingResume] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -39,18 +39,21 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>, 
-    field: 'profileImageUrl' | 'resumeUrl', 
+    field: 'profileImageUrl', 
     setLoading: (val: boolean) => void,
-    folder: string
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setLoading(true);
     try {
-      const path = `${folder}/${Date.now()}_${file.name}`;
-      const { url } = await uploadFile(file, path);
-      form.setValue(field, url);
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const result = await uploadImageAction(formData);
+      if (!result.success) throw new Error(result.error);
+      
+      form.setValue(field, result.url);
     } catch (error) {
       console.error(`Error uploading ${field}`, error);
       alert('Upload failed');
@@ -119,7 +122,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
         <div className="space-y-2">
           <label className="text-sm font-medium">Profile Image</label>
-          <Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'profileImageUrl', setUploadingImage, 'profile')} disabled={uploadingImage} />
+          <Input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'profileImageUrl', setUploadingImage)} disabled={uploadingImage} />
           {uploadingImage && <p className="text-sm text-gray-500">Uploading...</p>}
           {form.watch('profileImageUrl') && (
             <img src={form.watch('profileImageUrl')} alt="Profile preview" className="mt-2 h-32 w-32 object-cover rounded-full" />
@@ -127,12 +130,8 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Resume (PDF)</label>
-          <Input type="file" accept="application/pdf" onChange={(e) => handleFileUpload(e, 'resumeUrl', setUploadingResume, 'resumes')} disabled={uploadingResume} />
-          {uploadingResume && <p className="text-sm text-gray-500">Uploading...</p>}
-          {form.watch('resumeUrl') && (
-            <p className="mt-2 text-sm text-green-600">✓ Resume uploaded successfully</p>
-          )}
+          <label className="text-sm font-medium">Resume Link (Google Drive, etc.)</label>
+          <Input type="url" {...form.register('resumeUrl')} placeholder="https://..." />
         </div>
       </div>
 

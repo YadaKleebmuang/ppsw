@@ -22,6 +22,11 @@ export const getProject = async (id: string) => {
   return await getDocument(COLLECTION_NAME, id);
 };
 
+export const getProjectBySlug = async (slug: string) => {
+  const docs = await getDocuments(COLLECTION_NAME, [where('slug', '==', slug)]);
+  return docs.length > 0 ? docs[0] : null;
+};
+
 export const createProject = async (data: ProjectFormValues) => {
   const id = data.slug;
   await createDocument(COLLECTION_NAME, id, data);
