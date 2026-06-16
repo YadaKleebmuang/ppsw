@@ -14,11 +14,8 @@ import {
 const navItems = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/admin/projects', icon: FolderOpen },
-  { name: 'Categories', href: '/admin/categories', icon: Tags },
-  { name: 'Tech Stacks', href: '/admin/tech-stacks', icon: Layers },
-  { name: 'Skills', href: '/admin/skills', icon: Settings },
-  { name: 'Profile', href: '/admin/profile', icon: User },
-  { name: 'Resume', href: '/admin/resume', icon: FileText },
+  { name: 'Categories & Skills', href: '/admin/settings', icon: Settings },
+  { name: 'Profile & Resume', href: '/admin/profile', icon: User },
 ];
 
 export function AdminSidebar() {
