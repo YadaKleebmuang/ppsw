@@ -2,7 +2,6 @@ import { ProjectForm } from '@/features/projects/components/ProjectForm';
 import { createProject } from '@/features/projects/services/project.service';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { ProjectFormValues } from '@/features/projects/schemas/project.schema';
 
 export const metadata = {
   title: 'Create Project | Admin',

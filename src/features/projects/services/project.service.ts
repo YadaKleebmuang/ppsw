@@ -6,7 +6,7 @@ import {
   deleteDocument 
 } from '@/lib/firebase/firestore';
 import { where } from 'firebase/firestore';
-import { ProjectFormValues } from '../schemas/project.schema';
+import { ProjectFormData } from '../schemas/project.schema';
 
 const COLLECTION_NAME = 'projects';
 
@@ -27,13 +27,13 @@ export const getProjectBySlug = async (slug: string) => {
   return docs.length > 0 ? docs[0] : null;
 };
 
-export const createProject = async (data: ProjectFormValues) => {
+export const createProject = async (data: ProjectFormData) => {
   const id = data.slug;
   await createDocument(COLLECTION_NAME, id, data);
   return id;
 };
 
-export const updateProject = async (id: string, data: Partial<ProjectFormValues>) => {
+export const updateProject = async (id: string, data: Partial<ProjectFormData>) => {
   await updateDocument(COLLECTION_NAME, id, data);
 };
 
