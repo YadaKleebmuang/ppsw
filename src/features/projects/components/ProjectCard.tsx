@@ -2,30 +2,24 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { ProjectImageFormValues } from '../schemas/project.schema';
+import { Project } from '@/types';
+import { ArrowRight } from 'lucide-react';
 
 interface ProjectCardProps {
-  slug: string;
-  titleTh: string;
-  titleEn: string;
-  shortDescriptionTh: string;
-  images?: ProjectImageFormValues[];
-  tags?: string[];
+  project: Project;
 }
 
-export function ProjectCard({ slug, titleTh, titleEn, shortDescriptionTh, images = [], tags = [] }: ProjectCardProps) {
-  const coverImageObj = images.find(img => img.isCover) || images[0];
-  const coverImageUrl = coverImageObj?.src;
-  const altText = coverImageObj?.altTextEn || coverImageObj?.altTextTh || titleEn;
+export function ProjectCard({ project }: ProjectCardProps) {
+  const { slug, titleEnglish, shortDescription, coverImageUrl, categoryId } = project;
 
   return (
     <Link href={`/projects/${slug}`}>
-      <Card className="group overflow-hidden border-0 bg-gray-50 hover:bg-gray-100 transition-all cursor-pointer h-full flex flex-col shadow-none">
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
+      <Card className="group overflow-hidden border bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer h-full flex flex-col rounded-2xl">
+        <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
           {coverImageUrl ? (
             <Image 
               src={coverImageUrl} 
-              alt={altText} 
+              alt={titleEnglish} 
               fill 
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -35,21 +29,20 @@ export function ProjectCard({ slug, titleTh, titleEn, shortDescriptionTh, images
               <span className="font-medium">No Image</span>
             </div>
           )}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
         </div>
         <CardContent className="p-6 flex-1 flex flex-col">
-          <h3 className="text-xl font-bold text-gray-900 group-hover:text-black line-clamp-1">{titleTh}</h3>
-          <p className="text-sm font-medium text-gray-500 mt-1 line-clamp-1">{titleEn}</p>
-          <p className="text-gray-600 mt-4 line-clamp-2 text-sm flex-1">{shortDescriptionTh}</p>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold tracking-wider uppercase text-gray-500">
+              {categoryId}
+            </span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-black line-clamp-1">{titleEnglish}</h3>
+          <p className="text-gray-600 text-sm line-clamp-2 mb-4 flex-1">{shortDescription}</p>
           
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-6">
-              {tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="font-normal bg-white">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
+          <div className="flex items-center text-sm font-medium text-black mt-auto">
+            อ่านเพิ่มเติม <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </div>
         </CardContent>
       </Card>
     </Link>

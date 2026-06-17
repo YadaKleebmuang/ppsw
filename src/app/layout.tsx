@@ -9,7 +9,7 @@ const notoSansThai = Noto_Sans_Thai({
 });
 
 import { Analytics } from "@vercel/analytics/react";
-import { Toaster } from 'sonner';
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Portfolio Management Platform",

@@ -3,6 +3,7 @@ import { categoryRepository } from '@/repositories/category.repository';
 import Link from 'next/link';
 import { ArrowRight, FolderOpen } from 'lucide-react';
 import { Metadata } from 'next';
+import { ProjectCard } from '@/features/projects/components/ProjectCard';
 
 export const metadata: Metadata = {
   title: 'Projects | Portfolio',
@@ -79,42 +80,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         {filteredProjects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProjects.map((project) => (
-              <Link 
-                key={project.id} 
-                href={`/projects/${project.slug}`}
-                className="group flex flex-col bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className="relative aspect-video overflow-hidden bg-gray-100">
-                  {project.coverImageUrl ? (
-                    <img 
-                      src={project.coverImageUrl} 
-                      alt={project.titleEnglish} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      No Image
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-semibold tracking-wider uppercase text-gray-500">
-                      {project.categoryId}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-black line-clamp-1">
-                    {project.titleEnglish}
-                  </h3>
-                  <p className="text-gray-600 text-sm line-clamp-2 mb-4 flex-1">
-                    {project.shortDescription}
-                  </p>
-                  <div className="flex items-center text-sm font-medium text-black mt-auto">
-                    อ่านเพิ่มเติม <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
-              </Link>
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         ) : (
