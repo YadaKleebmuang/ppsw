@@ -1,20 +1,23 @@
 import { profileRepository } from '@/repositories/profile.repository';
 import { projectRepository } from '@/repositories/project.repository';
 import { skillRepository } from '@/repositories/skill.repository';
+import { techStackRepository } from '@/repositories/tech-stack.repository';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Mail, ArrowRight, ExternalLink } from 'lucide-react';
+import { Mail, ArrowRight, ExternalLink, Download } from 'lucide-react';
 import { FaLinkedin, FaGithub } from 'react-icons/fa';
 import { CopyEmailIcon } from './CopyEmailIcon';
 import { CopyEmailActionButton } from './CopyEmailActionButton';
+import { TechIcon } from '@/components/ui/tech-icon';
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function HomePage() {
-  const [profile, featuredProjects, allSkills] = await Promise.all([
+  const [profile, featuredProjects, allSkills, techStacks] = await Promise.all([
     profileRepository.getProfile(),
     projectRepository.getFeaturedProjects(),
     skillRepository.getVisibleSkills(),
+    techStackRepository.getAllSorted(),
   ]);
 
   // Group skills by category
@@ -53,10 +56,17 @@ export default async function HomePage() {
                   </Button>
                 </Link>
                 <Link href="/about">
-                  <Button size="lg" variant="outline" className="rounded-full px-8 font-medium">
+                  <Button size="lg" variant="outline" className="rounded-full px-8 font-medium bg-white">
                     เกี่ยวกับฉัน
                   </Button>
                 </Link>
+                {profile?.resumeUrl && (
+                  <a href={profile.resumeUrl} target="_blank" rel="noreferrer">
+                    <Button size="lg" variant="secondary" className="rounded-full px-8 font-medium">
+                      ดู Resume <Download className="ml-2 w-4 h-4" />
+                    </Button>
+                  </a>
+                )}
               </div>
 
               <div className="flex items-center gap-4 pt-4">
@@ -74,19 +84,35 @@ export default async function HomePage() {
                   <CopyEmailIcon email={profile.email} />
                 )}
               </div>
+              
+              {techStacks && techStacks.length > 0 && (
+                <div className="pt-8 animate-in fade-in slide-in-from-bottom-12 duration-700 delay-200">
+                  <p className="text-sm text-gray-500 font-medium mb-3 uppercase tracking-wider">Tech Stack</p>
+                  <div className="flex flex-wrap gap-2">
+                    {techStacks.filter(ts => ts.isActive).slice(0, 7).map(ts => (
+                      <div key={ts.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border rounded-full text-sm font-medium text-gray-700 shadow-sm cursor-default hover:border-gray-400 transition-colors">
+                        <TechIcon icon={ts.icon} />
+                        {ts.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
-            {profile?.profileImageUrl && (
-              <div className="flex-1 flex justify-center md:justify-end animate-in fade-in slide-in-from-right-8 duration-700 delay-200">
-                <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
+            <div className="flex-1 flex justify-center md:justify-end animate-in fade-in slide-in-from-right-8 duration-700 delay-200">
+              <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl bg-gray-50 flex items-center justify-center">
+                {profile?.profileImageUrl ? (
                   <img 
                     src={profile.profileImageUrl} 
                     alt={profile.fullName} 
                     className="w-full h-full object-cover"
                   />
-                </div>
+                ) : (
+                  <div className="text-6xl md:text-8xl">👩🏻‍💻</div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </section>
