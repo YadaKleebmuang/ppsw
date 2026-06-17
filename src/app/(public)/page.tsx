@@ -48,7 +48,7 @@ export default async function HomePage() {
                   </p>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap items-center gap-4">
                 <Link href="/projects">
                   <Button size="lg" className="rounded-full px-8 font-medium shadow-md hover:shadow-lg transition-all">
@@ -84,7 +84,7 @@ export default async function HomePage() {
                   <CopyEmailIcon email={profile.email} />
                 )}
               </div>
-              
+
               {techStacks && techStacks.length > 0 && (
                 <div className="pt-8 animate-in fade-in slide-in-from-bottom-12 duration-700 delay-200">
                   <p className="text-sm text-gray-500 font-medium mb-3 uppercase tracking-wider">Tech Stack</p>
@@ -99,13 +99,13 @@ export default async function HomePage() {
                 </div>
               )}
             </div>
-            
+
             <div className="flex-1 flex justify-center md:justify-end animate-in fade-in slide-in-from-right-8 duration-700 delay-200">
               <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl bg-gray-50 flex items-center justify-center">
                 {profile?.profileImageUrl ? (
-                  <img 
-                    src={profile.profileImageUrl} 
-                    alt={profile.fullName} 
+                  <img
+                    src={profile.profileImageUrl}
+                    alt={profile.fullName}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -133,16 +133,16 @@ export default async function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProjects.map((project) => (
-                <Link 
-                  key={project.id} 
+                <Link
+                  key={project.id}
                   href={`/projects/${project.slug}`}
                   className="group flex flex-col bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="relative aspect-video overflow-hidden bg-gray-100">
                     {project.coverImageUrl ? (
-                      <img 
-                        src={project.coverImageUrl} 
-                        alt={project.titleEnglish} 
+                      <img
+                        src={project.coverImageUrl}
+                        alt={project.titleEnglish}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
@@ -209,7 +209,7 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-      
+
       {/* Contact CTA */}
       <section className="py-24 bg-black text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-black pointer-events-none" />

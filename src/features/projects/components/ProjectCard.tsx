@@ -17,10 +17,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <Card className="group overflow-hidden border bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer h-full flex flex-col rounded-2xl">
         <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
           {coverImageUrl ? (
-            <Image 
-              src={coverImageUrl} 
-              alt={titleEnglish} 
-              fill 
+            <Image
+              src={coverImageUrl}
+              alt={titleEnglish}
+              fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
@@ -39,7 +39,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-black line-clamp-1">{titleEnglish}</h3>
           <p className="text-gray-600 text-sm line-clamp-2 mb-4 flex-1">{shortDescription}</p>
-          
+
           <div className="flex items-center text-sm font-medium text-black mt-auto">
             อ่านเพิ่มเติม <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
           </div>
