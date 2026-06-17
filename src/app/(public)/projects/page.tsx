@@ -21,8 +21,9 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
   const selectedCategory = resolvedSearchParams.category || 'all';
 
-  const filteredProjects = selectedCategory === 'all' 
-    ? projects 
+
+  const filteredProjects = selectedCategory === 'all'
+    ? projects
     : projects.filter(p => p.categoryId === selectedCategory);
 
   return (
@@ -48,28 +49,26 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
       {/* Filter and Grid */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-        
+
         {/* Category Filters */}
         <div className="flex flex-wrap gap-2 mb-12">
-          <Link 
-            href="/projects" 
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-              selectedCategory === 'all' 
-                ? 'bg-black text-white shadow-md' 
+          <Link
+            href="/projects"
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === 'all'
+                ? 'bg-black text-white shadow-md'
                 : 'bg-white text-gray-600 border hover:border-gray-400'
-            }`}
+              }`}
           >
             ทั้งหมด
           </Link>
           {categories.map(cat => (
-            <Link 
-              key={cat.id} 
+            <Link
+              key={cat.id}
               href={`/projects?category=${cat.id}`}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                selectedCategory === cat.id 
-                  ? 'bg-black text-white shadow-md' 
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat.id
+                  ? 'bg-black text-white shadow-md'
                   : 'bg-white text-gray-600 border hover:border-gray-400'
-              }`}
+                }`}
             >
               {cat.name}
             </Link>
@@ -79,9 +78,10 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         {/* Projects Grid */}
         {filteredProjects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+            {filteredProjects.map((project) => {
+              const catName = categories.find(c => c.id === project.categoryId)?.name;
+              return <ProjectCard key={project.id} project={project} categoryName={catName} />
+            })}
           </div>
         ) : (
           <div className="text-center py-24 bg-white rounded-2xl border border-dashed">

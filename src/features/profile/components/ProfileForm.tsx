@@ -19,6 +19,7 @@ interface ProfileFormProps {
 export function ProfileForm({ initialData, profileId }: ProfileFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -62,6 +63,36 @@ export function ProfileForm({ initialData, profileId }: ProfileFormProps) {
       toast.error('เกิดข้อผิดพลาดในการบันทึกข้อมูลโปรไฟล์');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'portfolio/profile');
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      form.setValue('profileImageUrl', data.secure_url, { shouldValidate: true, shouldDirty: true });
+      toast.success('อัปโหลดรูปโปรไฟล์สำเร็จ');
+    } catch (error) {
+      console.error(error);
+      toast.error('อัปโหลดรูปภาพล้มเหลว');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -117,12 +148,36 @@ export function ProfileForm({ initialData, profileId }: ProfileFormProps) {
 
       <div className="pt-4 border-t space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">URL รูปโปรไฟล์</label>
-          <Input type="text" {...form.register('profileImageUrl')} placeholder="https://..." />
-          <p className="text-xs text-gray-500">ใส่ URL ของรูปภาพ (ระบบอัปโหลดรูปโปรไฟล์จะอยู่ใน Phase ถัดไป)</p>
-          {form.watch('profileImageUrl') && (
-            <img src={form.watch('profileImageUrl')} alt="Profile preview" className="mt-4 h-32 w-32 object-cover rounded-full border shadow-sm" />
-          )}
+          <label className="text-sm font-medium">รูปโปรไฟล์ (Profile Image)</label>
+          <div className="flex items-center gap-4">
+            <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-gray-100 shadow-sm flex-shrink-0 bg-gray-50 flex items-center justify-center">
+              {form.watch('profileImageUrl') ? (
+                <img 
+                  src={form.watch('profileImageUrl')} 
+                  alt="Profile preview" 
+                  className="h-full w-full object-cover" 
+                />
+              ) : (
+                <span className="text-3xl">👤</span>
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={isUploading}
+                className="max-w-sm"
+              />
+              <p className="text-xs text-gray-500">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 5MB</p>
+              
+              <div className="pt-2">
+                <label className="text-xs font-medium text-gray-500 mb-1 block">หรือระบุ URL รูปภาพโดยตรง</label>
+                <Input type="text" {...form.register('profileImageUrl')} placeholder="https://..." className="text-sm" />
+              </div>
+            </div>
+          </div>
+          {isUploading && <p className="text-sm text-blue-500 mt-2">กำลังอัปโหลดรูปภาพ...</p>}
         </div>
       </div>
 

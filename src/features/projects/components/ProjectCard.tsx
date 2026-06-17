@@ -7,9 +7,10 @@ import { ArrowRight } from 'lucide-react';
 
 interface ProjectCardProps {
   project: Project;
+  categoryName?: string;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, categoryName }: ProjectCardProps) {
   const { slug, titleEnglish, shortDescription, coverImageUrl, categoryId } = project;
 
   return (
@@ -34,7 +35,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <CardContent className="p-6 flex-1 flex flex-col">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold tracking-wider uppercase text-gray-500">
-              {categoryId}
+              {categoryName || categoryId}
             </span>
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-black line-clamp-1">{titleEnglish}</h3>

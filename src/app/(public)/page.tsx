@@ -2,6 +2,7 @@ import { profileRepository } from '@/repositories/profile.repository';
 import { projectRepository } from '@/repositories/project.repository';
 import { skillRepository } from '@/repositories/skill.repository';
 import { techStackRepository } from '@/repositories/tech-stack.repository';
+import { categoryRepository } from '@/repositories/category.repository';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Mail, ArrowRight, ExternalLink, Download } from 'lucide-react';
@@ -13,11 +14,12 @@ import { TechIcon } from '@/components/ui/tech-icon';
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function HomePage() {
-  const [profile, featuredProjects, allSkills, techStacks] = await Promise.all([
+  const [profile, featuredProjects, allSkills, techStacks, categories] = await Promise.all([
     profileRepository.getProfile(),
     projectRepository.getFeaturedProjects(),
     skillRepository.getVisibleSkills(),
     techStackRepository.getAllSorted(),
+    categoryRepository.getAllSorted(),
   ]);
 
   // Group skills by category
@@ -100,19 +102,12 @@ export default async function HomePage() {
               )}
             </div>
 
-            <div className="flex-1 flex justify-center md:justify-end animate-in fade-in slide-in-from-right-8 duration-700 delay-200">
-              <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl bg-gray-50 flex items-center justify-center">
-                {profile?.profileImageUrl ? (
-                  <img
-                    src={profile.profileImageUrl}
-                    alt={profile.fullName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="text-6xl md:text-8xl">👩🏻‍💻</div>
-                )}
+            <div className="flex-shrink-0 flex justify-center animate-in fade-in slide-in-from-right-8 duration-700 delay-200">
+              <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl bg-white flex items-center justify-center">
+                <div className="text-[100px] md:text-[140px] leading-none">👩🏻‍💻</div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -155,7 +150,7 @@ export default async function HomePage() {
                   <div className="p-6 flex flex-col flex-1">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-semibold tracking-wider uppercase text-gray-500">
-                        {project.categoryId}
+                        {categories.find(c => c.id === project.categoryId)?.name || project.categoryId}
                       </span>
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-black line-clamp-1">

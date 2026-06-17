@@ -1,5 +1,6 @@
 import { projectRepository } from '@/repositories/project.repository';
 import { techStackRepository } from '@/repositories/tech-stack.repository';
+import { categoryRepository } from '@/repositories/category.repository';
 import { notFound } from 'next/navigation';
 import { ExternalLink, ArrowLeft, Calendar, LayoutGrid } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
@@ -33,6 +34,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const allTechStacks = await techStackRepository.getAllSorted();
   const projectTechStacks = allTechStacks.filter(t => project.techStackIds.includes(t.id!));
 
+  // Fetch category
+  const category = await categoryRepository.getById(project.categoryId);
+
   return (
     <article className="min-h-screen bg-white pb-24">
       {/* Header Section */}
@@ -47,7 +51,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <div className="flex-1 space-y-4">
               <div className="flex items-center gap-3">
                 <span className="px-3 py-1 bg-black text-white text-xs font-bold uppercase tracking-wider rounded-full">
-                  {project.categoryId}
+                  {category?.name || project.categoryId}
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
