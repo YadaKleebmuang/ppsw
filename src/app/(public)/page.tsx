@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Mail, ArrowRight, ExternalLink } from 'lucide-react';
 import { FaLinkedin, FaGithub } from 'react-icons/fa';
 import { CopyEmailIcon } from './CopyEmailIcon';
+import { CopyEmailActionButton } from './CopyEmailActionButton';
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -193,15 +194,11 @@ export default async function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             {profile?.email && (
-              <a href={`mailto:${profile.email}`}>
-                <Button size="lg" className="rounded-full px-8 bg-white text-black hover:bg-gray-100 w-full sm:w-auto font-bold h-12">
-                  ส่งอีเมลถึงฉัน <Mail className="ml-2 w-4 h-4" />
-                </Button>
-              </a>
+              <CopyEmailActionButton email={profile.email} />
             )}
             {profile?.linkedinUrl && (
               <a href={profile.linkedinUrl} target="_blank" rel="noreferrer">
-                <Button size="lg" variant="outline" className="rounded-full px-8 border-gray-600 text-white hover:bg-gray-800 w-full sm:w-auto font-medium h-12">
+                <Button size="lg" variant="outline" className="rounded-full px-8 bg-white text-black hover:bg-gray-100 w-full sm:w-auto font-bold h-12">
                   เชื่อมต่อผ่าน LinkedIn <ExternalLink className="ml-2 w-4 h-4" />
                 </Button>
               </a>
