@@ -78,11 +78,15 @@ export function ExperienceFormModal({ isOpen, onClose, onSuccess, initialData }:
   const onSubmit = async (data: ExperienceFormData) => {
     setIsLoading(true);
     try {
+      const payload = {
+        ...data,
+        endDate: data.endDate ?? null,
+      };
       if (initialData?.id) {
-        await experienceRepository.update(initialData.id, data);
+        await experienceRepository.update(initialData.id, payload);
         toast.success('อัปเดตประสบการณ์ทำงานสำเร็จ');
       } else {
-        await experienceRepository.create(data);
+        await experienceRepository.create(payload);
         toast.success('เพิ่มประสบการณ์ทำงานสำเร็จ');
       }
       onSuccess();
