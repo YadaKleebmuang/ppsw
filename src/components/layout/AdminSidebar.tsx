@@ -5,12 +5,22 @@ import {
   LayoutDashboard, 
   FolderOpen, 
   User, 
-  Settings
+  Settings,
+  Tags,
+  Cpu,
+  GraduationCap,
+  Briefcase,
+  Star
 } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/admin/projects', icon: FolderOpen },
+  { name: 'Categories', href: '/admin/categories', icon: Tags },
+  { name: 'Tech Stacks', href: '/admin/tech-stacks', icon: Cpu },
+  { name: 'Skills', href: '/admin/skills', icon: Star },
+  { name: 'Educations', href: '/admin/educations', icon: GraduationCap },
+  { name: 'Experiences', href: '/admin/experiences', icon: Briefcase },
   { name: 'Profile & Resume', href: '/admin/profile', icon: User },
 ];
 

@@ -7,16 +7,16 @@ import { profileSchema, ProfileFormValues } from '../schemas/profile.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { auth } from '@/lib/firebase/client';
-
-import { saveProfile } from '../services/profile.service';
+import { profileRepository } from '@/repositories/profile.repository';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface ProfileFormProps {
   initialData?: ProfileFormValues | null;
+  profileId?: string;
 }
 
-export function ProfileForm({ initialData }: ProfileFormProps) {
+export function ProfileForm({ initialData, profileId }: ProfileFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,33 +25,41 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
     defaultValues: initialData || {
       fullName: '',
       headline: '',
-      aboutMeTh: '',
-      aboutMeEn: '',
+      bio: '',
+      about: '',
       email: '',
-      github: '',
-      linkedin: '',
-      resumeUrl: '',
+      githubUrl: '',
+      linkedinUrl: '',
       profileImageUrl: '',
-      educationSchool: '',
-      educationDegree: '',
-      educationYear: '',
-      educationGpa: '',
-      skillsFrontend: '',
-      skillsBackend: '',
-      skillsOther: '',
+      resumeUrl: '',
     },
   });
-
 
   const handleSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true);
     try {
-      await saveProfile(data);
-      router.push('/admin/profile');
+      const payload = {
+        fullName: data.fullName,
+        headline: data.headline,
+        bio: data.bio || '',
+        about: data.about || '',
+        email: data.email || '',
+        githubUrl: data.githubUrl || '',
+        linkedinUrl: data.linkedinUrl || '',
+        profileImageUrl: data.profileImageUrl || '',
+        resumeUrl: data.resumeUrl || '',
+      };
+
+      if (profileId) {
+        await profileRepository.updateProfile(profileId, payload);
+      } else {
+        await profileRepository.createProfile(payload);
+      }
+      toast.success('บันทึกข้อมูลโปรไฟล์สำเร็จ');
       router.refresh();
     } catch (error) {
       console.error('Form submission error', error);
-      alert('Failed to save profile');
+      toast.error('เกิดข้อผิดพลาดในการบันทึกข้อมูลโปรไฟล์');
     } finally {
       setIsSubmitting(false);
     }
@@ -62,101 +70,64 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Full Name</label>
+          <label className="text-sm font-medium">ชื่อ-นามสกุล (Full Name)</label>
           <Input {...form.register('fullName')} placeholder="e.g. John Doe" />
           {form.formState.errors.fullName && <p className="text-sm text-red-500">{form.formState.errors.fullName.message}</p>}
         </div>
         
         <div className="space-y-2">
-          <label className="text-sm font-medium">Professional Headline</label>
+          <label className="text-sm font-medium">ตำแหน่งหรือ Headline</label>
           <Input {...form.register('headline')} placeholder="e.g. Full Stack Developer" />
+          {form.formState.errors.headline && <p className="text-sm text-red-500">{form.formState.errors.headline.message}</p>}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">About Me (Thai)</label>
-          <Textarea {...form.register('aboutMeTh')} rows={4} />
-        </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">คำแนะนำตัวแบบย่อ (Bio)</label>
+        <Textarea {...form.register('bio')} rows={2} placeholder="ประวัติย่อๆ สั้นๆ สำหรับแสดงหน้าแรก" />
+      </div>
         
-        <div className="space-y-2">
-          <label className="text-sm font-medium">About Me (English)</label>
-          <Textarea {...form.register('aboutMeEn')} rows={4} />
-        </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">ประวัติแบบละเอียด (About)</label>
+        <Textarea {...form.register('about')} rows={6} placeholder="ประวัติการทำงาน แนวคิด หรือเรื่องราวของคุณ" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
-        <div className="space-y-2 md:col-span-2">
-          <h3 className="text-lg font-medium">Education</h3>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4 border-t">
         <div className="space-y-2">
-          <label className="text-sm font-medium">School / University</label>
-          <Input {...form.register('educationSchool')} placeholder="e.g. King Mongkut's University..." />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Degree / Major</label>
-          <Input {...form.register('educationDegree')} placeholder="e.g. Computer Science" />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Year</label>
-          <Input {...form.register('educationYear')} placeholder="e.g. 2020 - 2024" />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">GPA</label>
-          <Input {...form.register('educationGpa')} placeholder="e.g. 3.50" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
-        <div className="space-y-2 md:col-span-3">
-          <h3 className="text-lg font-medium">Skills (Comma separated)</h3>
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Frontend</label>
-          <Textarea {...form.register('skillsFrontend')} placeholder="e.g. Next.js, React, Tailwind CSS" rows={3} />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Backend</label>
-          <Textarea {...form.register('skillsBackend')} placeholder="e.g. Node.js, Python, Firebase" rows={3} />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Other</label>
-          <Textarea {...form.register('skillsOther')} placeholder="e.g. Git, Figma, Docker" rows={3} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Email Address</label>
+          <label className="text-sm font-medium">อีเมล (Email)</label>
           <Input type="email" {...form.register('email')} />
+          {form.formState.errors.email && <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>}
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">GitHub URL</label>
-          <Input {...form.register('github')} />
+          <Input {...form.register('githubUrl')} />
+          {form.formState.errors.githubUrl && <p className="text-sm text-red-500">{form.formState.errors.githubUrl.message}</p>}
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">LinkedIn URL</label>
-          <Input {...form.register('linkedin')} />
+          <Input {...form.register('linkedinUrl')} />
+          {form.formState.errors.linkedinUrl && <p className="text-sm text-red-500">{form.formState.errors.linkedinUrl.message}</p>}
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Resume URL (PDF Link)</label>
+          <Input {...form.register('resumeUrl')} placeholder="https://.../resume.pdf" />
+          {form.formState.errors.resumeUrl && <p className="text-sm text-red-500">{form.formState.errors.resumeUrl.message}</p>}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+      <div className="pt-4 border-t space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Profile Image Path</label>
-          <Input type="text" {...form.register('profileImageUrl')} placeholder="/images/profile.jpg" />
+          <label className="text-sm font-medium">URL รูปโปรไฟล์</label>
+          <Input type="text" {...form.register('profileImageUrl')} placeholder="https://..." />
+          <p className="text-xs text-gray-500">ใส่ URL ของรูปภาพ (ระบบอัปโหลดรูปโปรไฟล์จะอยู่ใน Phase ถัดไป)</p>
           {form.watch('profileImageUrl') && (
-            <img src={form.watch('profileImageUrl')} alt="Profile preview" className="mt-2 h-32 w-32 object-cover rounded-full" />
+            <img src={form.watch('profileImageUrl')} alt="Profile preview" className="mt-4 h-32 w-32 object-cover rounded-full border shadow-sm" />
           )}
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Resume Link (Google Drive, etc.)</label>
-          <Input type="url" {...form.register('resumeUrl')} placeholder="https://..." />
         </div>
       </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto px-8">
-        {isSubmitting ? 'Saving...' : 'Save Profile'}
+        {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก Profile'}
       </Button>
     </form>
   );

@@ -1,22 +1,15 @@
 import { z } from 'zod';
 
 export const profileSchema = z.object({
-  fullName: z.string().min(1, 'Full name is required'),
-  headline: z.string().min(1, 'Headline is required'),
-  aboutMeTh: z.string().optional(),
-  aboutMeEn: z.string().optional(),
-  email: z.string().email('Invalid email').optional(),
-  github: z.string().url().optional().or(z.literal('')),
-  linkedin: z.string().url().optional().or(z.literal('')),
-  resumeUrl: z.string().optional(),
+  fullName: z.string().min(1, 'กรุณาระบุชื่อ-นามสกุล'),
+  headline: z.string().min(1, 'กรุณาระบุตำแหน่งปัจจุบันหรือ Headline'),
+  bio: z.string().optional(),
+  about: z.string().optional(),
+  email: z.string().email('รูปแบบอีเมลไม่ถูกต้อง').optional().or(z.literal('')),
+  githubUrl: z.string().url('รูปแบบ URL ไม่ถูกต้อง').optional().or(z.literal('')),
+  linkedinUrl: z.string().url('รูปแบบ URL ไม่ถูกต้อง').optional().or(z.literal('')),
   profileImageUrl: z.string().optional(),
-  educationSchool: z.string().optional(),
-  educationDegree: z.string().optional(),
-  educationYear: z.string().optional(),
-  educationGpa: z.string().optional(),
-  skillsFrontend: z.string().optional(),
-  skillsBackend: z.string().optional(),
-  skillsOther: z.string().optional(),
+  resumeUrl: z.string().url('รูปแบบ URL ไม่ถูกต้อง').optional().or(z.literal('')),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;

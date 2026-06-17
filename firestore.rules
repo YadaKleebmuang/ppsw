@@ -43,32 +43,12 @@ service cloud.firestore {
       // Based on the user prompt, projectImages etc. are separate collections with projectId field.
     }
     
-    match /projectImages/{document} {
+    match /educations/{document} {
       allow read: if true;
       allow write: if isAdmin();
     }
     
-    match /projectFeatures/{document} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    
-    match /projectResponsibilities/{document} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    
-    match /projectAchievements/{document} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    
-    match /projectCategories/{document} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    
-    match /projectTechStacks/{document} {
+    match /experiences/{document} {
       allow read: if true;
       allow write: if isAdmin();
     }

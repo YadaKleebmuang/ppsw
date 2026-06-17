@@ -1,138 +1,349 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm, SubmitHandler, Resolver } from 'react-hook-form';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { projectSchema, ProjectFormValues } from '../schemas/project.schema';
+import { projectSchema, ProjectFormData } from '../schemas/project.schema';
+import { Project, Category, TechStack } from '@/types';
+import { projectRepository } from '@/repositories/project.repository';
+import { categoryRepository } from '@/repositories/category.repository';
+import { techStackRepository } from '@/repositories/tech-stack.repository';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ProjectImageManager } from './ProjectImageManager';
-
-import { auth } from '@/lib/firebase/client';
-
-import { createProject, updateProject } from '../services/project.service';
+import { MultiImageUpload } from '@/components/ui/multi-image-upload';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface ProjectFormProps {
-  initialData?: ProjectFormValues & { id?: string };
-  projectId?: string;
+  initialData?: Project;
 }
 
-export function ProjectForm({ initialData, projectId }: ProjectFormProps) {
+export function ProjectForm({ initialData }: ProjectFormProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [techStacks, setTechStacks] = useState<TechStack[]>([]);
 
-  const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema) as unknown as Resolver<ProjectFormValues>,
-    defaultValues: initialData || {
+  const form = useForm<ProjectFormData>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: initialData ? {
+      ...initialData,
+      images: initialData.images || [],
+      objectives: initialData.objectives || [],
+      features: initialData.features || [],
+      responsibilities: initialData.responsibilities || [],
+      results: initialData.results || [],
+      techStackIds: initialData.techStackIds || [],
+    } : {
+      titleThai: '',
+      titleEnglish: '',
       slug: '',
-      titleTh: '',
-      titleEn: '',
-      shortDescriptionTh: '',
-      contentTh: '',
-      category: 'Web App',
-      tags: [],
-      images: [],
+      categoryId: '',
+      shortDescription: '',
+      fullContent: '',
+      problem: '',
+      objectives: [],
+      features: [],
+      responsibilities: [],
+      results: [],
+      techStackIds: [],
       githubUrl: '',
-      demoUrl: '',
-      isPublished: false,
+      liveDemoUrl: '',
+      images: [],
+      coverImageUrl: '',
+      isFeatured: false,
+      isPublished: true,
     },
   });
 
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const [cats, techs] = await Promise.all([
+          categoryRepository.getAllSorted(),
+          techStackRepository.getAllSorted()
+        ]);
+        setCategories(cats);
+        setTechStacks(techs);
+      } catch (error) {
+        console.error(error);
+        toast.error('ไม่สามารถโหลดข้อมูลหมวดหมู่และเทคโนโลยีได้');
+      }
+    };
+    fetchMetadata();
+  }, []);
 
-  const onSubmitForm: SubmitHandler<ProjectFormValues> = async (data) => {
-    setIsSubmitting(true);
+  const handleArrayChange = (field: keyof ProjectFormData, value: string) => {
+    const array = value.split('\n').filter(item => item.trim() !== '');
+    form.setValue(field as any, array);
+  };
+
+  const arrayToText = (array: string[]) => array.join('\n');
+
+  const toggleTechStack = (id: string) => {
+    const current = form.getValues('techStackIds');
+    if (current.includes(id)) {
+      form.setValue('techStackIds', current.filter(x => x !== id));
+    } else {
+      form.setValue('techStackIds', [...current, id]);
+    }
+  };
+
+  const onSubmit = async (data: ProjectFormData) => {
+    setIsLoading(true);
     try {
-      if (projectId) {
-        await updateProject(projectId, data);
+      // Find cover image from images array
+      const coverImage = data.images.find(img => img.isCover) || data.images[0];
+      const finalCoverImageUrl = coverImage ? coverImage.url : (data.coverImageUrl || '');
+
+      const payload = {
+        ...data,
+        problem: data.problem || '',
+        githubUrl: data.githubUrl || '',
+        liveDemoUrl: data.liveDemoUrl || '',
+        coverImageUrl: finalCoverImageUrl,
+      };
+
+      if (initialData?.id) {
+        await projectRepository.update(initialData.id, payload);
+        toast.success('อัปเดตโปรเจกต์สำเร็จ');
       } else {
-        await createProject(data);
+        await projectRepository.create(payload);
+        toast.success('สร้างโปรเจกต์สำเร็จ');
       }
       router.push('/admin/projects');
       router.refresh();
     } catch (error) {
-      console.error('Form submission error', error);
-      alert('Failed to save project');
+      console.error(error);
+      toast.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Slug (URL)</label>
-          <Input {...form.register('slug')} placeholder="e.g. my-project-name" />
-          {form.formState.errors.slug && <p className="text-sm text-red-500">{form.formState.errors.slug.message}</p>}
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 bg-white p-6 rounded-md shadow-sm border">
+      
+      {/* 1. Basic Information */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold border-b pb-2">ข้อมูลพื้นฐาน (Basic Info)</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="titleThai">ชื่อโปรเจกต์ (ภาษาไทย)</Label>
+            <Input id="titleThai" {...form.register('titleThai')} placeholder="เช่น ระบบจัดการร้านอาหาร" />
+            {form.formState.errors.titleThai && <p className="text-sm text-red-500">{form.formState.errors.titleThai.message}</p>}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="titleEnglish">ชื่อโปรเจกต์ (English)</Label>
+            <Input id="titleEnglish" {...form.register('titleEnglish')} placeholder="เช่น Restaurant Management System" />
+            {form.formState.errors.titleEnglish && <p className="text-sm text-red-500">{form.formState.errors.titleEnglish.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="slug">Slug (URL)</Label>
+            <Input id="slug" {...form.register('slug')} placeholder="เช่น restaurant-management-system" />
+            {form.formState.errors.slug && <p className="text-sm text-red-500">{form.formState.errors.slug.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="categoryId">หมวดหมู่</Label>
+            <select 
+              id="categoryId" 
+              {...form.register('categoryId')}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">-- เลือกหมวดหมู่ --</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+            {form.formState.errors.categoryId && <p className="text-sm text-red-500">{form.formState.errors.categoryId.message}</p>}
+          </div>
         </div>
+      </div>
+
+      {/* 2. Content */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold border-b pb-2">เนื้อหา (Content)</h2>
         
         <div className="space-y-2">
-          <label className="text-sm font-medium">Category</label>
-          <select 
-            {...form.register('category')} 
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-          >
-            <option value="Web App">Web App</option>
-            <option value="Chatbot">Chatbot</option>
-            <option value="Mobile App">Mobile App</option>
-            <option value="Other">Other</option>
-          </select>
+          <Label htmlFor="shortDescription">คำอธิบายย่อ (Short Description - โชว์ที่การ์ดหน้าแรก)</Label>
+          <Textarea id="shortDescription" {...form.register('shortDescription')} rows={2} />
+          {form.formState.errors.shortDescription && <p className="text-sm text-red-500">{form.formState.errors.shortDescription.message}</p>}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Title (Thai)</label>
-          <Input {...form.register('titleTh')} />
+          <Label htmlFor="problem">ปัญหาที่ต้องการแก้ (Problem/Challenge)</Label>
+          <Textarea id="problem" {...form.register('problem')} rows={3} />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Title (English)</label>
-          <Input {...form.register('titleEn')} />
+          <Label htmlFor="fullContent">เนื้อหาหลัก (Full Content - รองรับ Markdown)</Label>
+          <Textarea id="fullContent" {...form.register('fullContent')} rows={8} />
+          {form.formState.errors.fullContent && <p className="text-sm text-red-500">{form.formState.errors.fullContent.message}</p>}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="objectives">เป้าหมาย (Objectives - ขึ้นบรรทัดใหม่เพื่อแยกข้อ)</Label>
+            <Textarea 
+              id="objectives" 
+              defaultValue={arrayToText(form.getValues('objectives'))}
+              onChange={(e) => handleArrayChange('objectives', e.target.value)}
+              rows={4} 
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="features">ฟีเจอร์หลัก (Key Features - ขึ้นบรรทัดใหม่เพื่อแยกข้อ)</Label>
+            <Textarea 
+              id="features" 
+              defaultValue={arrayToText(form.getValues('features'))}
+              onChange={(e) => handleArrayChange('features', e.target.value)}
+              rows={4} 
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="responsibilities">หน้าที่รับผิดชอบ (My Role - ขึ้นบรรทัดใหม่เพื่อแยกข้อ)</Label>
+            <Textarea 
+              id="responsibilities" 
+              defaultValue={arrayToText(form.getValues('responsibilities'))}
+              onChange={(e) => handleArrayChange('responsibilities', e.target.value)}
+              rows={4} 
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="results">ผลลัพธ์ (Results - ขึ้นบรรทัดใหม่เพื่อแยกข้อ)</Label>
+            <Textarea 
+              id="results" 
+              defaultValue={arrayToText(form.getValues('results'))}
+              onChange={(e) => handleArrayChange('results', e.target.value)}
+              rows={4} 
+            />
+          </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Short Description</label>
-        <Textarea {...form.register('shortDescriptionTh')} rows={3} />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Full Content (Markdown / Text)</label>
-        <Textarea {...form.register('contentTh')} rows={10} placeholder="Write your project details here..." />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">GitHub URL</label>
-          <Input {...form.register('githubUrl')} placeholder="https://github.com/..." />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Live Demo URL</label>
-          <Input {...form.register('demoUrl')} placeholder="https://..." />
-        </div>
-      </div>
-
-      <div className="space-y-4 pt-6 border-t">
-        <div className="flex flex-col gap-2">
-          <h3 className="text-lg font-medium">Project Images</h3>
-          <p className="text-sm text-gray-500">Manage local image paths, alt texts, and cover images.</p>
-        </div>
+      {/* 3. Tech Stacks & Links */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold border-b pb-2">เทคโนโลยีและลิงก์ (Tech & Links)</h2>
         
-        <ProjectImageManager 
-          images={form.watch('images') || []} 
-          onChange={(newImages) => form.setValue('images', newImages)} 
-        />
+        <div className="space-y-3">
+          <Label>เทคโนโลยีที่ใช้ (Tech Stacks)</Label>
+          <div className="flex flex-wrap gap-2 p-4 border rounded-md bg-gray-50 max-h-48 overflow-y-auto">
+            {techStacks.map(tech => {
+              const isSelected = form.watch('techStackIds').includes(tech.id!);
+              return (
+                <button
+                  key={tech.id}
+                  type="button"
+                  onClick={() => toggleTechStack(tech.id!)}
+                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                    isSelected 
+                      ? 'bg-black text-white border-black' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  {tech.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="githubUrl">GitHub Repository URL</Label>
+            <Input id="githubUrl" {...form.register('githubUrl')} placeholder="https://github.com/..." />
+            {form.formState.errors.githubUrl && <p className="text-sm text-red-500">{form.formState.errors.githubUrl.message}</p>}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="liveDemoUrl">Live Demo URL</Label>
+            <Input id="liveDemoUrl" {...form.register('liveDemoUrl')} placeholder="https://..." />
+            {form.formState.errors.liveDemoUrl && <p className="text-sm text-red-500">{form.formState.errors.liveDemoUrl.message}</p>}
+          </div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 pt-6 border-t">
-        <input type="checkbox" id="isPublished" {...form.register('isPublished')} className="h-4 w-4" />
-        <label htmlFor="isPublished" className="text-sm font-medium">Publish this project (Visible to public)</label>
+      {/* 4. Media & Images */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold border-b pb-2">รูปภาพประกอบ (Gallery)</h2>
+        <div className="space-y-2">
+          <Label>รูปภาพของโปรเจกต์</Label>
+          <p className="text-xs text-gray-500 pb-2">สามารถอัปโหลดได้หลายรูป รูปแรกสุด (หรือที่กดติดดาว) จะเป็นรูปปกเสมอ</p>
+          <MultiImageUpload 
+            value={form.watch('images').map(img => ({
+              url: img.url,
+              publicId: img.publicId,
+              isCover: img.isCover
+            }))}
+            onChange={(images) => {
+              const currentImages = form.getValues('images');
+              const mapped = images.map((img, idx) => {
+                const existing = currentImages.find(c => c.url === img.url);
+                if (existing) {
+                  return { ...existing, isCover: img.isCover || false, order: idx };
+                }
+                return {
+                  id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(7),
+                  url: img.url,
+                  publicId: img.publicId || '',
+                  alt: '',
+                  caption: '',
+                  order: idx,
+                  isCover: img.isCover || false,
+                };
+              });
+              form.setValue('images', mapped);
+            }}
+          />
+        </div>
       </div>
 
-      <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto px-8">
-        {isSubmitting ? 'Saving...' : 'Save Project'}
-      </Button>
+      {/* 5. Status & Visibility */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold border-b pb-2">สถานะการแสดงผล (Status)</h2>
+        
+        <div className="flex flex-col space-y-4">
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              {...form.register('isPublished')}
+              className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+            />
+            <div>
+              <span className="text-sm font-medium block">เผยแพร่โปรเจกต์นี้ (Published)</span>
+              <span className="text-xs text-gray-500">ถ้าปิดไว้ จะเป็นเพียง Draft มองไม่เห็นบนหน้าเว็บ</span>
+            </div>
+          </label>
+
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              {...form.register('isFeatured')}
+              className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+            />
+            <div>
+              <span className="text-sm font-medium block">แสดงในหน้าแรก (Featured)</span>
+              <span className="text-xs text-gray-500">สำหรับผลงานที่ต้องการเน้นเป็นพิเศษในหน้า Home</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div className="pt-6 border-t flex justify-end gap-4">
+        <Button type="button" variant="outline" onClick={() => router.push('/admin/projects')} disabled={isLoading}>
+          ยกเลิก
+        </Button>
+        <Button type="submit" disabled={isLoading} className="px-8">
+          {isLoading ? 'กำลังบันทึก...' : 'บันทึกโปรเจกต์'}
+        </Button>
+      </div>
+
     </form>
   );
 }

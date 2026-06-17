@@ -1,27 +1,137 @@
-import { ProjectGrid } from '@/features/projects/components/ProjectGrid';
-import { getPublishedProjects } from '@/features/projects/services/project.service';
-import { ProjectFormValues } from '@/features/projects/schemas/project.schema';
+import { projectRepository } from '@/repositories/project.repository';
+import { categoryRepository } from '@/repositories/category.repository';
+import Link from 'next/link';
+import { ArrowRight, FolderOpen } from 'lucide-react';
+import { Metadata } from 'next';
 
-export const metadata = {
-  title: 'Projects | Personal Portfolio',
-  description: 'A showcase of my software development projects.',
+export const metadata: Metadata = {
+  title: 'Projects | Portfolio',
+  description: 'รวมผลงานและโปรเจกต์ที่ผ่านมา',
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
-export default async function ProjectsPage() {
-  const projects = await getPublishedProjects() as (ProjectFormValues & { id: string })[];
+export default async function ProjectsPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
+  const resolvedSearchParams = await searchParams;
+  const [projects, categories] = await Promise.all([
+    projectRepository.getPublishedProjects(),
+    categoryRepository.getAllSorted(),
+  ]);
+
+  const selectedCategory = resolvedSearchParams.category || 'all';
+
+  const filteredProjects = selectedCategory === 'all' 
+    ? projects 
+    : projects.filter(p => p.categoryId === selectedCategory);
 
   return (
-    <div className="py-12 space-y-12">
-      <section className="space-y-4">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">ผลงาน (Projects)</h1>
-        <p className="text-xl text-gray-500 max-w-2xl">
-          รวบรวมผลงานและโปรเจกต์ต่างๆ ที่ผ่านมา ทั้งงานเดี่ยว งานกลุ่ม และโปรเจกต์ส่วนตัว
-        </p>
+    <div className="min-h-screen bg-gray-50 pb-24">
+      {/* Header */}
+      <section className="bg-white py-20 border-b">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-gray-100 text-black rounded-xl border shadow-sm">
+                <FolderOpen className="w-6 h-6" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
+                ผลงาน (Projects)
+              </h1>
+            </div>
+            <p className="text-xl text-gray-600 mt-6">
+              รวบรวมผลงานและโปรเจกต์ที่ผมได้พัฒนา ทั้งงานส่วนตัวและโปรเจกต์ที่ทำร่วมกับทีม
+            </p>
+          </div>
+        </div>
       </section>
 
-      <ProjectGrid projects={projects} />
+      {/* Filter and Grid */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+        
+        {/* Category Filters */}
+        <div className="flex flex-wrap gap-2 mb-12">
+          <Link 
+            href="/projects" 
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+              selectedCategory === 'all' 
+                ? 'bg-black text-white shadow-md' 
+                : 'bg-white text-gray-600 border hover:border-gray-400'
+            }`}
+          >
+            ทั้งหมด
+          </Link>
+          {categories.map(cat => (
+            <Link 
+              key={cat.id} 
+              href={`/projects?category=${cat.id}`}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === cat.id 
+                  ? 'bg-black text-white shadow-md' 
+                  : 'bg-white text-gray-600 border hover:border-gray-400'
+              }`}
+            >
+              {cat.name}
+            </Link>
+          ))}
+        </div>
+
+        {/* Projects Grid */}
+        {filteredProjects.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProjects.map((project) => (
+              <Link 
+                key={project.id} 
+                href={`/projects/${project.slug}`}
+                className="group flex flex-col bg-white rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="relative aspect-video overflow-hidden bg-gray-100">
+                  {project.coverImageUrl ? (
+                    <img 
+                      src={project.coverImageUrl} 
+                      alt={project.titleEnglish} 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      No Image
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold tracking-wider uppercase text-gray-500">
+                      {project.categoryId}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-black line-clamp-1">
+                    {project.titleEnglish}
+                  </h3>
+                  <p className="text-gray-600 text-sm line-clamp-2 mb-4 flex-1">
+                    {project.shortDescription}
+                  </p>
+                  <div className="flex items-center text-sm font-medium text-black mt-auto">
+                    อ่านเพิ่มเติม <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-24 bg-white rounded-2xl border border-dashed">
+            <FolderOpen className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900">ไม่มีผลงานในหมวดหมู่นี้</h3>
+            <p className="mt-1 text-gray-500">ทดลองเลือกหมวดหมู่ใหม่ หรือกลับไปดูผลงานทั้งหมด</p>
+            <div className="mt-6">
+              <Link href="/projects">
+                <button type="button" className="inline-flex items-center rounded-full bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
+                  ดูผลงานทั้งหมด
+                </button>
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

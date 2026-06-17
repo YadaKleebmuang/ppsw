@@ -1,34 +1,50 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { ProjectForm } from '@/features/projects/components/ProjectForm';
-import { getProject, updateProject } from '@/features/projects/services/project.service';
-import { redirect, notFound } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { projectRepository } from '@/repositories/project.repository';
+import { Project } from '@/types';
+import { useParams } from 'next/navigation';
 
-import { ProjectFormValues } from '@/features/projects/schemas/project.schema';
+export default function EditProjectPage() {
+  const params = useParams();
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-export const metadata = {
-  title: 'Edit Project | Admin',
-};
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const id = params.id as string;
+        if (id) {
+          const data = await projectRepository.getById(id);
+          setProject(data || null);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProject();
+  }, [params.id]);
 
-export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  const project = await getProject(resolvedParams.id) as (ProjectFormValues & { id: string }) | null;
-
-  if (!project) {
-    notFound();
+  if (isLoading) {
+    return <div className="p-8 text-center">กำลังโหลดข้อมูล...</div>;
   }
 
-  // Form logic moved to Client Component to retain Firebase Auth context
+  if (!project) {
+    return <div className="p-8 text-center text-red-500">ไม่พบโปรเจกต์ที่ต้องการแก้ไข</div>;
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Edit Project</h1>
-        <p className="text-gray-500">แก้ไขข้อมูลผลงาน</p>
+        <p className="text-gray-500">แก้ไขข้อมูลโปรเจกต์</p>
       </div>
 
-      <div className="bg-white p-6 rounded-md border">
-        <ProjectForm initialData={project} projectId={resolvedParams.id} />
-      </div>
+      <ProjectForm initialData={project} />
     </div>
   );
 }
