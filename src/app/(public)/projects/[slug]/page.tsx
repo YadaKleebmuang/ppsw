@@ -1,23 +1,36 @@
-import { projectRepository } from '@/repositories/project.repository';
-import { techStackRepository } from '@/repositories/tech-stack.repository';
-import { categoryRepository } from '@/repositories/category.repository';
-import { notFound } from 'next/navigation';
-import { ExternalLink, ArrowLeft, Calendar, LayoutGrid } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
-import ReactMarkdown from 'react-markdown';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Metadata } from 'next';
+import Link from "next/link";
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import { FaGithub } from "react-icons/fa";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  CheckCircle2,
+  ExternalLink,
+  Goal,
+  Images,
+  Layers3,
+  LayoutGrid,
+  Sparkles,
+  UserRoundCog,
+} from "lucide-react";
+import { TechIcon } from "@/components/ui/tech-icon";
+import { projectRepository } from "@/repositories/project.repository";
+import { techStackRepository } from "@/repositories/tech-stack.repository";
+import { categoryRepository } from "@/repositories/category.repository";
+import { ProjectImageGallery } from "./ProjectImageGallery";
 
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   const project = await projectRepository.getBySlug(resolvedParams.slug);
-  if (!project) return { title: 'Project Not Found' };
-  
+  if (!project) return { title: "Project Not Found" };
+
   return {
-    title: `${project.titleEnglish} | Portfolio`,
+    title: `${project.titleEnglish} | PPSW`,
     description: project.shortDescription,
   };
 }
@@ -30,189 +43,213 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  // Fetch tech stacks used in this project
-  const allTechStacks = await techStackRepository.getAllSorted();
-  const projectTechStacks = allTechStacks.filter(t => project.techStackIds.includes(t.id!));
+  const [allTechStacks, category] = await Promise.all([
+    techStackRepository.getAllSorted(),
+    categoryRepository.getById(project.categoryId),
+  ]);
 
-  // Fetch category
-  const category = await categoryRepository.getById(project.categoryId);
+  const projectTechStacks = allTechStacks.filter((tech) => project.techStackIds.includes(tech.id!));
+  const galleryImages = (project.images || [])
+    .filter((image) => !image.isCover && image.url)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   return (
-    <article className="min-h-screen bg-white pb-24">
-      {/* Header Section */}
-      <section className="bg-gray-50 pt-20 pb-16 border-b">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-          <Link href="/projects" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black mb-8 transition-colors">
-            <ArrowLeft className="mr-2 w-4 h-4" />
-            กลับไปหน้าผลงานทั้งหมด
-          </Link>
+    <article className="ppsw-page pb-10 pt-10">
+      <span className="bubble left-[7%] top-44 size-20 hidden md:block" />
+      <span className="bubble right-[8%] top-28 size-24 hidden lg:block" />
+      <span className="bubble right-[2%] top-[34rem] size-28 hidden xl:block" />
 
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
-            <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-black text-white text-xs font-bold uppercase tracking-wider rounded-full">
-                  {category?.name || project.categoryId}
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
-                {project.titleEnglish}
-              </h1>
-              <h2 className="text-2xl font-medium text-gray-500">
+      <Link
+        href="/projects"
+        className="glass-button mb-7 inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-[#0063ff]"
+      >
+        <ArrowLeft className="size-4" />
+        Back to Projects
+      </Link>
+
+      <section className="grid items-center gap-8 lg:grid-cols-[1fr_0.92fr]">
+        <div className="space-y-6">
+          <div className="glass-button inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-[#0063ff]">
+            <LayoutGrid className="size-4" />
+            {category?.name || "Project"}
+          </div>
+
+          <div>
+            <h1 className="max-w-4xl text-[clamp(2.8rem,5vw,5.25rem)] font-bold leading-tight text-[#08245c]">
+              {project.titleEnglish}
+            </h1>
+            {project.titleThai && (
+              <h2 className="mt-3 text-2xl font-semibold leading-relaxed text-[#0063ff] md:text-3xl">
                 {project.titleThai}
               </h2>
-              <p className="text-xl text-gray-600 leading-relaxed max-w-3xl pt-4">
-                {project.shortDescription}
-              </p>
-            </div>
+            )}
+          </div>
 
-            <div className="flex flex-wrap md:flex-col gap-3 shrink-0">
-              {project.liveDemoUrl && (
-                <a href={project.liveDemoUrl} target="_blank" rel="noreferrer">
-                  <Button size="lg" className="w-full sm:w-auto md:w-full rounded-full font-medium">
-                    <ExternalLink className="mr-2 w-4 h-4" /> Live Demo
-                  </Button>
-                </a>
-              )}
-              {project.githubUrl && (
-                <a href={project.githubUrl} target="_blank" rel="noreferrer">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto md:w-full rounded-full font-medium">
-                    <FaGithub className="mr-2 w-4 h-4" /> GitHub Repo
-                  </Button>
-                </a>
-              )}
-            </div>
+          <p className="max-w-3xl text-lg leading-8 text-[#46629a] md:text-xl">
+            {project.shortDescription}
+          </p>
+
+          <div className="flex flex-wrap gap-4">
+            {project.liveDemoUrl && (
+              <a href={project.liveDemoUrl} target="_blank" rel="noreferrer" className="blue-button inline-flex min-h-14 items-center gap-3 rounded-full px-8 font-bold">
+                Live Demo
+                <ExternalLink className="size-5" />
+              </a>
+            )}
+            {project.githubUrl && (
+              <a href={project.githubUrl} target="_blank" rel="noreferrer" className="glass-button inline-flex min-h-14 items-center gap-3 rounded-full px-8 font-bold text-[#08245c]">
+                <FaGithub className="size-5" />
+                GitHub Repo
+              </a>
+            )}
+          </div>
+        </div>
+
+        <div className="glass-panel relative overflow-hidden rounded-[2rem] p-4">
+          <span className="bubble -right-8 -top-8 size-28" />
+          <div className="relative aspect-video overflow-hidden rounded-[1.4rem] border border-white/75 bg-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            {project.coverImageUrl ? (
+              <img src={project.coverImageUrl} alt={project.titleEnglish} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full items-center justify-center text-[#7daaf3]">
+                <Images className="size-16" />
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl pt-16">
-
-        {/* Cover Image */}
-        {project.coverImageUrl && (
-          <div className="rounded-3xl overflow-hidden border shadow-lg mb-16 aspect-video relative group">
-            <img
-              src={project.coverImageUrl}
-              alt={project.titleEnglish}
-              className="w-full h-full object-cover"
-            />
+      <section className="glass-panel mt-8 grid gap-5 rounded-[1.5rem] p-6 sm:grid-cols-3">
+        {[
+          [Layers3, category?.name || "Project", "Category"],
+          [Sparkles, `${projectTechStacks.length || project.techStackIds.length || 0}+`, "Technologies"],
+          [Calendar, project.isFeatured ? "Featured" : "Published", "Status"],
+        ].map(([Icon, value, label], index) => (
+          <div key={String(label)} className={index ? "border-white/55 py-2 text-center sm:border-l" : "py-2 text-center"}>
+            <span className="glass-button mx-auto mb-3 grid size-12 place-items-center rounded-full text-[#0063ff]">
+              <Icon className="size-6" />
+            </span>
+            <p className="text-2xl font-bold text-[#0063ff]">{String(value)}</p>
+            <p className="mt-1 text-sm text-[#46629a]">{String(label)}</p>
           </div>
-        )}
+        ))}
+      </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left Column: Details */}
-          <div className="lg:col-span-2 space-y-16">
+      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="space-y-8">
+          {project.problem && (
+            <SectionCard icon={<Goal className="size-6" />} title="The Challenge">
+              <p className="whitespace-pre-wrap text-lg leading-8 text-[#46629a]">{project.problem}</p>
+            </SectionCard>
+          )}
 
-            {project.problem && (
-              <section>
-                <h3 className="text-2xl font-bold mb-4 text-gray-900 flex items-center gap-2">
-                  ปัญหาและความท้าทาย (The Challenge)
-                </h3>
-                <p className="text-gray-600 leading-relaxed text-lg whitespace-pre-wrap">
-                  {project.problem}
-                </p>
-              </section>
-            )}
-
-            <section>
-              <h3 className="text-2xl font-bold mb-4 text-gray-900 flex items-center gap-2">
-                เนื้อหาหลัก (Overview)
-              </h3>
-              <div className="prose prose-lg prose-gray max-w-none break-words">
-                <ReactMarkdown>{project.fullContent}</ReactMarkdown>
-              </div>
-            </section>
-
-            {project.features && project.features.length > 0 && (
-              <section>
-                <h3 className="text-2xl font-bold mb-6 text-gray-900">ฟีเจอร์หลัก (Key Features)</h3>
-                <ul className="space-y-4">
-                  {project.features.map((feature, i) => (
-                    <li key={i} className="flex items-start">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-black text-sm font-bold mr-4 shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <span className="text-gray-600 leading-relaxed text-lg">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {project.results && project.results.length > 0 && (
-              <section>
-                <h3 className="text-2xl font-bold mb-6 text-gray-900">ผลลัพธ์ (Results)</h3>
-                <div className="grid gap-4">
-                  {project.results.map((result, i) => (
-                    <div key={i} className="p-6 bg-gray-50 rounded-2xl border text-gray-700 leading-relaxed text-lg">
-                      {result}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Gallery */}
-            {project.images && project.images.filter(img => !img.isCover).length > 0 && (
-              <section>
-                <h3 className="text-2xl font-bold mb-6 text-gray-900 flex items-center gap-2">
-                  <LayoutGrid className="w-6 h-6" /> รูปภาพเพิ่มเติม (Gallery)
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {project.images.filter(img => !img.isCover).map((img, i) => (
-                    <div key={i} className="rounded-xl overflow-hidden border bg-gray-100 aspect-[4/3] group cursor-pointer relative">
-                      <img src={img.url} alt={`Screenshot ${i + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-          </div>
-
-          {/* Right Column: Meta */}
-          <div className="space-y-8 lg:sticky lg:top-24 self-start">
-
-            <div className="p-6 bg-gray-50 rounded-2xl border space-y-6">
-              <h3 className="font-bold text-gray-900 border-b pb-4">เทคโนโลยีที่ใช้ (Tech Stack)</h3>
-              <div className="flex flex-wrap gap-2">
-                {projectTechStacks.length > 0 ? projectTechStacks.map(tech => (
-                  <span key={tech.id} className="px-3 py-1.5 bg-white border rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                    {tech.name}
-                  </span>
-                )) : (
-                  <span className="text-sm text-gray-500">ไม่ได้ระบุ</span>
-                )}
-              </div>
+          <SectionCard icon={<Layers3 className="size-6" />} title="Overview">
+            <div className="prose prose-lg max-w-none break-words text-[#46629a] prose-headings:text-[#08245c] prose-strong:text-[#08245c] prose-a:text-[#0063ff] prose-li:marker:text-[#0063ff]">
+              <ReactMarkdown>{project.fullContent}</ReactMarkdown>
             </div>
+          </SectionCard>
 
-            {project.objectives && project.objectives.length > 0 && (
-              <div className="p-6 bg-white border rounded-2xl shadow-sm space-y-4">
-                <h3 className="font-bold text-gray-900 mb-2">เป้าหมาย (Objectives)</h3>
-                <ul className="space-y-3 text-gray-600 text-sm list-disc pl-4">
-                  {project.objectives.map((obj, i) => (
-                    <li key={i}>{obj}</li>
-                  ))}
-                </ul>
+          {project.features && project.features.length > 0 && (
+            <SectionCard icon={<CheckCircle2 className="size-6" />} title="Key Features">
+              <div className="grid gap-3">
+                {project.features.map((feature, index) => (
+                  <div key={feature} className="flex gap-4 rounded-2xl border border-white/70 bg-white/45 p-4 text-[#46629a]">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#0063ff] text-sm font-bold text-white shadow-lg">
+                      {index + 1}
+                    </span>
+                    <p className="leading-7">{feature}</p>
+                  </div>
+                ))}
               </div>
-            )}
+            </SectionCard>
+          )}
 
-            {project.responsibilities && project.responsibilities.length > 0 && (
-              <div className="p-6 bg-black text-white rounded-2xl shadow-md space-y-4 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full -mr-16 -mt-16 pointer-events-none" />
-                <h3 className="font-bold mb-2">บทบาทของฉัน (My Role)</h3>
-                <ul className="space-y-3 text-gray-300 text-sm list-disc pl-4 relative z-10">
-                  {project.responsibilities.map((res, i) => (
-                    <li key={i}>{res}</li>
-                  ))}
-                </ul>
+          {project.results && project.results.length > 0 && (
+            <SectionCard icon={<Sparkles className="size-6" />} title="Results">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {project.results.map((result) => (
+                  <div key={result} className="rounded-2xl border border-white/70 bg-white/45 p-5 text-lg leading-8 text-[#46629a]">
+                    {result}
+                  </div>
+                ))}
               </div>
-            )}
+            </SectionCard>
+          )}
 
-          </div>
+          {galleryImages.length > 0 && (
+            <SectionCard icon={<Images className="size-6" />} title="Gallery">
+              <ProjectImageGallery images={galleryImages} title={project.titleEnglish} />
+            </SectionCard>
+          )}
         </div>
+
+        <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
+          <div className="glass-panel rounded-[1.5rem] p-6">
+            <h3 className="mb-5 text-xl font-bold text-[#08245c]">Tech Stack</h3>
+            {projectTechStacks.length > 0 ? (
+              <div className="grid gap-3">
+                {projectTechStacks.map((tech) => (
+                  <div key={tech.id || tech.slug} className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white/45 p-3">
+                    <span className="glass-button grid size-12 shrink-0 place-items-center rounded-full text-[#0063ff]">
+                      <TechIcon icon={tech.icon} name={tech.name} className="size-6" />
+                    </span>
+                    <div>
+                      <p className="font-bold text-[#08245c]">{tech.name}</p>
+                      <p className="text-xs text-[#5872a6]">{tech.slug}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-[#5872a6]">No technology specified.</p>
+            )}
+          </div>
+
+          {project.objectives && project.objectives.length > 0 && (
+            <SideCard icon={<Goal className="size-5" />} title="Objectives" items={project.objectives} />
+          )}
+
+          {project.responsibilities && project.responsibilities.length > 0 && (
+            <SideCard icon={<UserRoundCog className="size-5" />} title="My Role" items={project.responsibilities} />
+          )}
+
+          <Link href="/contact" className="blue-button flex min-h-14 items-center justify-center gap-3 rounded-full px-6 font-bold">
+            Let&apos;s Talk
+            <ArrowRight className="size-5" />
+          </Link>
+        </aside>
       </div>
     </article>
+  );
+}
+
+function SectionCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <section className="glass-panel rounded-[1.75rem] p-6 md:p-8">
+      <div className="mb-6 flex items-center gap-3">
+        <span className="glass-button grid size-12 place-items-center rounded-full text-[#0063ff]">{icon}</span>
+        <h2 className="text-2xl font-bold text-[#08245c]">{title}</h2>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function SideCard({ icon, title, items }: { icon: React.ReactNode; title: string; items: string[] }) {
+  return (
+    <div className="glass-panel rounded-[1.5rem] p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="glass-button grid size-10 place-items-center rounded-full text-[#0063ff]">{icon}</span>
+        <h3 className="text-xl font-bold text-[#08245c]">{title}</h3>
+      </div>
+      <ul className="space-y-3">
+        {items.map((item) => (
+          <li key={item} className="flex gap-3 text-sm leading-6 text-[#46629a]">
+            <span className="mt-2 size-2 shrink-0 rounded-full bg-[#0063ff]" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

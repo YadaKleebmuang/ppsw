@@ -1,118 +1,90 @@
-import { profileRepository } from '@/repositories/profile.repository';
-import { Mail, MapPin, Download } from 'lucide-react';
-import { FaLinkedin, FaGithub } from 'react-icons/fa';
-import { Button } from '@/components/ui/button';
 import { Metadata } from 'next';
-import { CopyEmailButton } from './CopyEmailButton';
+import { Mail, MapPin, Phone, Send } from 'lucide-react';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { profileRepository } from '@/repositories/profile.repository';
+import { ContactMessageForm } from './ContactMessageForm';
 
 export const metadata: Metadata = {
-  title: 'Contact | Portfolio',
-  description: 'ติดต่อหรือดาวน์โหลดเรซูเม่',
+  title: 'Contact | PPSW',
+  description: 'Contact PPSW',
 };
 
 export const revalidate = 60;
 
+const fallbackProfile = {
+  email: 'ppsw.dev@gmail.com',
+  phone: '+66 98 765 4321',
+  location: 'Bangkok, Thailand',
+  githubUrl: 'https://github.com/ppsw-dev',
+  linkedinUrl: 'https://linkedin.com/in/pannaporn-suwannaporn',
+};
+
 export default async function ContactPage() {
-  const profile = await profileRepository.getProfile();
+  const profileData = await profileRepository.getProfile();
+  const profile = { ...fallbackProfile, ...profileData };
+  const displayUrl = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <section className="bg-gray-50 py-20 border-b">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
-              ติดต่อ (Contact)
-            </h1>
-            <p className="text-xl text-gray-600">
-              สนใจร่วมงานกัน มีโปรเจกต์ที่น่าสนใจ หรือต้องการสอบถามข้อมูลเพิ่มเติม สามารถติดต่อฉันได้ตามช่องทางด้านล่างนี้เลยค่ะ
-            </p>
+    <div className="ppsw-page pb-10 pt-10">
+      <span className="bubble left-[62%] top-32 size-14 hidden md:block" />
+      <span className="bubble right-16 top-[24rem] size-24 hidden lg:block" />
+
+      <section className="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <div className="glass-button mb-7 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-[#0063ff]">
+            <Send className="size-4" />
+            Let&apos;s Connect
+          </div>
+          <h1 className="text-[clamp(3.2rem,5.4vw,5.4rem)] font-bold leading-[1.05] text-[#08245c]">
+            Let&apos;s Work
+            <span className="block text-[#0063ff]">Together</span>
+          </h1>
+          <p className="mt-7 max-w-2xl text-xl leading-8 text-[#46629a]">
+            I&apos;m always open to discussing new opportunities, exciting projects, or just having a friendly chat.
+          </p>
+        </div>
+
+        <div className="relative hidden min-h-72 lg:block">
+          <span className="absolute right-24 top-10 h-36 w-64 rounded-full bg-[#5d96ff]/20 blur-3xl" />
+          <img
+            src="/images/projects/PLMP/Character-2-transparent-fixed.png"
+            alt="Contact illustration"
+            width={1145}
+            height={1373}
+            className="absolute right-10 top-[-3.5rem] h-[25rem] w-auto object-contain drop-shadow-[0_24px_34px_rgba(31,91,180,0.22)]"
+          />
+          <div className="blue-button absolute right-20 top-32 grid size-20 place-items-center rounded-full">
+            <Send className="size-12" />
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 max-w-5xl mx-auto">
-          
-          {/* Contact Methods */}
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">ช่องทางการติดต่อ</h2>
-            
-            {profile?.email && (
-              <CopyEmailButton email={profile.email} />
-            )}
-
-            {profile?.linkedinUrl && (
-              <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="group flex items-center p-6 bg-white border rounded-2xl shadow-sm hover:shadow-md transition-all hover:border-[#0077b5]">
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-[#0077b5] group-hover:text-white transition-colors shrink-0">
-                  <FaLinkedin className="w-5 h-5" />
+      <section className="mt-8 grid gap-5 lg:grid-cols-[0.72fr_1.4fr]">
+        <div className="glass-panel rounded-[1.5rem] p-8">
+          <h2 className="text-2xl font-bold text-[#08245c]">Contact Information</h2>
+          <div className="mt-8 space-y-5 border-l-2 border-[#8dbbff] pl-7">
+            {[
+              [MapPin, 'Location', profile.location],
+              [Mail, 'Email', profile.email],
+              [Phone, 'Phone', profile.phone],
+              [FaLinkedin, 'LinkedIn', displayUrl(profile.linkedinUrl)],
+              [FaGithub, 'GitHub', displayUrl(profile.githubUrl)],
+            ].map(([Icon, label, value]) => (
+              <div key={String(label)} className="flex items-center gap-5 border-b border-white/35 pb-4 last:border-b-0">
+                <span className="glass-button grid size-14 shrink-0 place-items-center rounded-full text-[#0063ff]">
+                  <Icon className="size-7" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-medium text-[#46629a]">{String(label)}</p>
+                  <p className="truncate font-bold text-[#08245c]">{String(value)}</p>
                 </div>
-                <div className="ml-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">LinkedIn</h3>
-                  <p className="text-lg font-semibold text-gray-900 group-hover:underline">ดูโปรไฟล์ LinkedIn</p>
-                </div>
-              </a>
-            )}
-
-            {profile?.githubUrl && (
-              <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="group flex items-center p-6 bg-white border rounded-2xl shadow-sm hover:shadow-md transition-all hover:border-black">
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors shrink-0">
-                  <FaGithub className="w-5 h-5" />
-                </div>
-                <div className="ml-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">GitHub</h3>
-                  <p className="text-lg font-semibold text-gray-900 group-hover:underline">ดู Source Code และผลงาน</p>
-                </div>
-              </a>
-            )}
-
-          </div>
-
-          {/* Download Resume & Location */}
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">ข้อมูลเพิ่มเติม</h2>
-            
-            <div className="p-8 bg-black text-white rounded-3xl shadow-xl relative overflow-hidden">
-              <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-              <div className="relative z-10">
-                <h3 className="text-xl font-bold mb-4">Resume</h3>
-                <p className="text-gray-400 mb-8 leading-relaxed">
-                  สามารถกดดู Resume ของฉันได้ที่นี่เพื่อดูรายละเอียดประวัติการศึกษา ประสบการณ์ทำงาน และทักษะ
-                </p>
-                {/* 
-                  Note: For real world use, the user should provide a resume URL in the profile. 
-                  Currently, we can mock it or provide a mailto link asking for it.
-                */}
-                {profile?.resumeUrl ? (
-                  <a href={profile.resumeUrl} target="_blank" rel="noreferrer">
-                    <Button size="lg" className="w-full bg-white text-black hover:bg-gray-100 rounded-xl font-bold">
-                      <Download className="mr-2 w-5 h-5" /> Resume
-                    </Button>
-                  </a>
-                ) : (
-                  <Button size="lg" disabled className="w-full bg-white/50 text-gray-500 rounded-xl font-bold cursor-not-allowed">
-                    <Download className="mr-2 w-5 h-5" /> ยังไม่มีไฟล์ Resume
-                  </Button>
-                )}
               </div>
-            </div>
-
-            <div className="p-8 bg-gray-50 rounded-3xl border">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 rounded-full bg-white border shadow-sm flex items-center justify-center text-black">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">สถานที่ทำงาน</h3>
-              </div>
-              <p className="text-gray-600 pl-14">
-                Bangkok, Thailand (On-site / Hybrid / Remote)
-              </p>
-            </div>
-
+            ))}
           </div>
-
         </div>
-      </div>
+
+        <ContactMessageForm />
+      </section>
     </div>
   );
 }

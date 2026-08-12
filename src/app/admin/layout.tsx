@@ -23,8 +23,6 @@ function AdminGuard({ children }: { children: ReactNode }) {
 
     if (!isAuthenticated && !isLoginPage) {
       router.push('/admin/login');
-    } else if (isAuthenticated && isLoginPage) {
-      router.push('/admin/dashboard');
     }
   }, [isAuthenticated, isLoading, isLoginPage, router, mounted]);
 

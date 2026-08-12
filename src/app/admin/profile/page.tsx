@@ -1,5 +1,9 @@
 import { ProfileForm } from '@/features/profile/components/ProfileForm';
 import { profileRepository } from '@/repositories/profile.repository';
+import { Profile } from '@/types';
+import { Timestamp } from 'firebase/firestore';
+import { AdminPageHeader } from '@/components/layout/AdminPageHeader';
+import { User } from 'lucide-react';
 
 export const metadata = {
   title: 'Profile | Admin',
@@ -7,24 +11,32 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
+type ProfileWithMetadata = Profile & {
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+};
+
 export default async function AdminProfile() {
   const rawProfile = await profileRepository.getProfile();
-  
-  // Remove Firebase Timestamp objects to avoid Server-to-Client serialization errors
+
   let safeProfile = null;
   if (rawProfile) {
-    const { createdAt, updatedAt, ...rest } = rawProfile as any;
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...rest } = rawProfile as ProfileWithMetadata;
+    void _createdAt;
+    void _updatedAt;
     safeProfile = rest;
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-        <p className="text-gray-500">จัดการข้อมูลส่วนตัวและช่องทางการติดต่อ</p>
-      </div>
+    <div className="max-w-5xl space-y-6">
+      <AdminPageHeader
+        icon={<User className="size-4" />}
+        eyebrow="Public Identity"
+        title="Profile & Resume"
+        description="Manage public profile, contact, footer, resume, and homepage summary content."
+      />
 
-      <div className="bg-white p-6 rounded-md border shadow-sm">
+      <div className="admin-card rounded-[1.5rem] p-6">
         <ProfileForm initialData={safeProfile} profileId={safeProfile?.id} />
       </div>
     </div>

@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { Education } from '@/types';
 import { educationRepository } from '@/repositories/education.repository';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, GraduationCap } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { EducationFormModal } from '@/features/educations/components/EducationFormModal';
+import { AdminPageHeader } from '@/components/layout/AdminPageHeader';
 import { toast } from 'sonner';
 
 export default function EducationsPage() {
@@ -23,13 +24,14 @@ export default function EducationsPage() {
       setEducations(data);
     } catch (error) {
       console.error(error);
-      toast.error('ไม่สามารถโหลดข้อมูลประวัติการศึกษาได้');
+      toast.error('Could not load education records.');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadEducations();
   }, []);
 
@@ -44,29 +46,34 @@ export default function EducationsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('คุณแน่ใจหรือไม่ที่จะลบประวัติการศึกษานี้?')) return;
-    
+    if (!confirm('Delete this education record?')) return;
+
     try {
       await educationRepository.delete(id);
-      toast.success('ลบประวัติการศึกษาสำเร็จ');
+      toast.success('Education record deleted.');
       loadEducations();
     } catch (error) {
       console.error(error);
-      toast.error('ไม่สามารถลบประวัติการศึกษาได้');
+      toast.error('Could not delete education record.');
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Educations</h1>
-        <Button onClick={handleCreate}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Education
-        </Button>
-      </div>
+      <AdminPageHeader
+        icon={<GraduationCap className="size-4" />}
+        eyebrow="About Page"
+        title="Education"
+        description="Manage the education timeline shown on the public About page."
+        action={
+          <Button onClick={handleCreate} className="min-h-11 rounded-full bg-[#0063ff] px-5 font-bold text-white shadow-lg shadow-[#0063ff]/20 hover:bg-[#0051d6]">
+            <Plus className="mr-2 size-4" />
+            Add Education
+          </Button>
+        }
+      />
 
-      <div className="border rounded-md">
+      <div className="admin-card overflow-hidden rounded-[1.5rem] p-3">
         <Table>
           <TableHeader>
             <TableRow>
@@ -81,33 +88,33 @@ export default function EducationsPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24">กำลังโหลด...</TableCell>
+                <TableCell colSpan={6} className="h-24 text-center">Loading...</TableCell>
               </TableRow>
             ) : educations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24">ไม่พบข้อมูล</TableCell>
+                <TableCell colSpan={6} className="h-24 text-center">No education records yet.</TableCell>
               </TableRow>
             ) : (
-              educations.map((edu) => (
-                <TableRow key={edu.id}>
-                  <TableCell className="font-medium">{edu.order}</TableCell>
+              educations.map((education) => (
+                <TableRow key={education.id}>
+                  <TableCell className="font-bold text-[#08245c]">{education.order}</TableCell>
                   <TableCell>
-                    <div className="font-medium">{edu.institution}</div>
-                    <div className="text-sm text-gray-500">{edu.faculty} - {edu.major}</div>
+                    <div className="font-bold text-[#08245c]">{education.institution}</div>
+                    <div className="text-sm text-[#6a82b2]">{education.faculty} - {education.major}</div>
                   </TableCell>
-                  <TableCell>{edu.degree}</TableCell>
-                  <TableCell>{edu.startYear} - {edu.endYear}</TableCell>
+                  <TableCell>{education.degree}</TableCell>
+                  <TableCell>{education.startYear} - {education.endYear}</TableCell>
                   <TableCell>
-                    <Badge variant={edu.isVisible ? 'default' : 'secondary'}>
-                      {edu.isVisible ? 'Visible' : 'Hidden'}
+                    <Badge variant={education.isVisible ? 'default' : 'secondary'} className={education.isVisible ? 'bg-emerald-600' : ''}>
+                      {education.isVisible ? 'Visible' : 'Hidden'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(edu)}>
-                      <Edit className="w-4 h-4" />
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(education)} className="text-[#0063ff]">
+                      <Edit className="size-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => edu.id && handleDelete(edu.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500" />
+                    <Button variant="ghost" size="icon" onClick={() => education.id && handleDelete(education.id)} className="text-red-600">
+                      <Trash2 className="size-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -117,9 +124,9 @@ export default function EducationsPage() {
         </Table>
       </div>
 
-      <EducationFormModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <EducationFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         onSuccess={loadEducations}
         initialData={editingEducation}
       />

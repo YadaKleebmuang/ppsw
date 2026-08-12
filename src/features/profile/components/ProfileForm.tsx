@@ -29,6 +29,11 @@ export function ProfileForm({ initialData, profileId }: ProfileFormProps) {
       bio: '',
       about: '',
       email: '',
+      phone: '',
+      location: '',
+      birthday: '',
+      clientSatisfaction: '',
+      footerDescription: '',
       githubUrl: '',
       linkedinUrl: '',
       profileImageUrl: '',
@@ -45,6 +50,11 @@ export function ProfileForm({ initialData, profileId }: ProfileFormProps) {
         bio: data.bio || '',
         about: data.about || '',
         email: data.email || '',
+        phone: data.phone || '',
+        location: data.location || '',
+        birthday: data.birthday || '',
+        clientSatisfaction: data.clientSatisfaction || '',
+        footerDescription: data.footerDescription || '',
         githubUrl: data.githubUrl || '',
         linkedinUrl: data.linkedinUrl || '',
         profileImageUrl: data.profileImageUrl || '',
@@ -129,6 +139,34 @@ export function ProfileForm({ initialData, profileId }: ProfileFormProps) {
           <Input type="email" {...form.register('email')} />
           {form.formState.errors.email && <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>}
         </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Phone</label>
+          <Input {...form.register('phone')} placeholder="+66 98 765 4321" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Location</label>
+          <Input {...form.register('location')} placeholder="Bangkok, Thailand" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Birthday</label>
+          <Input {...form.register('birthday')} placeholder="10 May 2003" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Client Satisfaction</label>
+          <Input {...form.register('clientSatisfaction')} placeholder="100%" />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Footer Description</label>
+        <Textarea
+          {...form.register('footerDescription')}
+          rows={2}
+          placeholder="Building modern, responsive websites with a focus on clean design and great user experience."
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
         <div className="space-y-2">
           <label className="text-sm font-medium">GitHub URL</label>
           <Input {...form.register('githubUrl')} />

@@ -103,9 +103,25 @@ export interface Profile {
   bio: string;
   about: string;
   email: string;
+  phone?: string;
+  location?: string;
+  birthday?: string;
+  clientSatisfaction?: string;
+  footerDescription?: string;
   githubUrl: string;
   linkedinUrl: string;
   profileImageUrl: string;
   resumeUrl?: string;
+  updatedAt?: Timestamp;
+}
+
+export interface ContactMessage {
+  id?: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  isRead: boolean;
+  createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }

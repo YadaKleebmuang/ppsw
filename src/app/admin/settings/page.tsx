@@ -1,7 +1,7 @@
 import { SettingsForm } from '@/features/settings/components/SettingsForm';
-import { getSettings, saveSettings } from '@/features/settings/services/settings.service';
-import { revalidatePath } from 'next/cache';
-import { SettingsFormValues } from '@/features/settings/schemas/settings.schema';
+import { getSettings } from '@/features/settings/services/settings.service';
+import { AdminPageHeader } from '@/components/layout/AdminPageHeader';
+import { Settings } from 'lucide-react';
 
 export const metadata = {
   title: 'Settings | Admin',
@@ -12,16 +12,16 @@ export const dynamic = 'force-dynamic';
 export default async function AdminSettings() {
   const settings = await getSettings();
 
-  // Form logic moved to Client Component to retain Firebase Auth context
-
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Categories & Skills</h1>
-        <p className="text-gray-500">จัดการหมวดหมู่ ทักษะ และเทคโนโลยีที่ใช้ในพอร์ตโฟลิโอของคุณ</p>
-      </div>
+    <div className="max-w-5xl space-y-6">
+      <AdminPageHeader
+        icon={<Settings className="size-4" />}
+        eyebrow="Site Configuration"
+        title="Settings"
+        description="Manage shared site settings for the portfolio."
+      />
 
-      <div className="bg-white p-6 rounded-md border shadow-sm">
+      <div className="admin-card rounded-[1.5rem] p-6">
         <SettingsForm initialData={settings} />
       </div>
     </div>

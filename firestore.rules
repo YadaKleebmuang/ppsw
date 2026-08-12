@@ -53,6 +53,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /messages/{document} {
+      allow create: if true
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.subject is string
+        && request.resource.data.message is string;
+      allow read, update, delete: if isAdmin();
+    }
+
     // Admin Users Collection
     match /users/{userId} {
       allow read, write: if isAdmin() || request.auth.uid == userId;

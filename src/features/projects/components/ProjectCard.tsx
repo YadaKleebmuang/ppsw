@@ -1,51 +1,56 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, Code2, ImageIcon } from 'lucide-react';
 import { Project } from '@/types';
-import { ArrowRight } from 'lucide-react';
 
 interface ProjectCardProps {
   project: Project;
   categoryName?: string;
+  techNames?: string[];
 }
 
-export function ProjectCard({ project, categoryName }: ProjectCardProps) {
+export function ProjectCard({ project, categoryName, techNames = [] }: ProjectCardProps) {
   const { slug, titleEnglish, shortDescription, coverImageUrl, categoryId } = project;
 
   return (
-    <Link href={`/projects/${slug}`}>
-      <Card className="group overflow-hidden border bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer h-full flex flex-col rounded-2xl">
-        <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
-          {coverImageUrl ? (
-            <Image
-              src={coverImageUrl}
-              alt={titleEnglish}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-              <span className="font-medium">No Image</span>
-            </div>
-          )}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-        </div>
-        <CardContent className="p-6 flex-1 flex flex-col">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold tracking-wider uppercase text-gray-500">
-              {categoryName || categoryId}
-            </span>
+    <Link href={`/projects/${slug}`} className="group glass-panel flex h-full flex-col overflow-hidden rounded-[1.25rem] p-4 transition hover:-translate-y-1">
+      <div className="relative aspect-video overflow-hidden rounded-xl bg-white/35">
+        {coverImageUrl ? (
+          <Image
+            src={coverImageUrl}
+            alt={titleEnglish}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            className="object-cover transition duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="absolute inset-0 grid place-items-center text-[#0063ff]">
+            <ImageIcon className="size-12" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-black line-clamp-1">{titleEnglish}</h3>
-          <p className="text-gray-600 text-sm line-clamp-2 mb-4 flex-1">{shortDescription}</p>
+        )}
+        <span className="glass-button absolute bottom-4 right-4 grid size-14 place-items-center rounded-full text-[#0063ff]">
+          <Code2 className="size-7" />
+        </span>
+      </div>
 
-          <div className="flex items-center text-sm font-medium text-black mt-auto">
-            อ่านเพิ่มเติม <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-1 flex-col px-2 pb-2 pt-5">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#0063ff]">{categoryName || categoryId}</p>
+        <h3 className="text-xl font-bold text-[#08245c]">{titleEnglish}</h3>
+        <p className="mt-3 line-clamp-2 flex-1 text-sm leading-6 text-[#46629a]">{shortDescription}</p>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          {(techNames.length ? techNames : ['Next.js', 'TypeScript', 'Tailwind CSS']).slice(0, 4).map((tech) => (
+            <span key={tech} className="rounded-full border border-[#9ec3ff]/70 bg-[#dceaff]/70 px-3 py-1 text-xs font-medium text-[#0063ff]">
+              {tech}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-6 inline-flex items-center gap-2 text-base font-bold text-[#005eff]">
+          View Project
+          <ArrowRight className="size-5 transition group-hover:translate-x-1" />
+        </div>
+      </div>
     </Link>
   );
 }
