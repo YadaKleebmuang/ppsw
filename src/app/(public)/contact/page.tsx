@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
-import { Mail, MapPin, Phone, Send } from 'lucide-react';
-import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { Send } from 'lucide-react';
 import { profileRepository } from '@/repositories/profile.repository';
 import { ContactMessageForm } from './ContactMessageForm';
+import { ContactInfoList } from './ContactInfoList';
 
 export const metadata: Metadata = {
   title: 'Contact | PPSW',
@@ -22,7 +22,6 @@ const fallbackProfile = {
 export default async function ContactPage() {
   const profileData = await profileRepository.getProfile();
   const profile = { ...fallbackProfile, ...profileData };
-  const displayUrl = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   return (
     <div className="ppsw-page pb-10 pt-10">
@@ -62,25 +61,13 @@ export default async function ContactPage() {
       <section className="mt-8 grid gap-5 lg:grid-cols-[0.72fr_1.4fr]">
         <div className="glass-panel rounded-[1.5rem] p-8">
           <h2 className="text-2xl font-bold text-[#08245c]">Contact Information</h2>
-          <div className="mt-8 space-y-5 border-l-2 border-[#8dbbff] pl-7">
-            {[
-              [MapPin, 'Location', profile.location],
-              [Mail, 'Email', profile.email],
-              [Phone, 'Phone', profile.phone],
-              [FaLinkedin, 'LinkedIn', displayUrl(profile.linkedinUrl)],
-              [FaGithub, 'GitHub', displayUrl(profile.githubUrl)],
-            ].map(([Icon, label, value]) => (
-              <div key={String(label)} className="flex items-center gap-5 border-b border-white/35 pb-4 last:border-b-0">
-                <span className="glass-button grid size-14 shrink-0 place-items-center rounded-full text-[#0063ff]">
-                  <Icon className="size-7" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-medium text-[#46629a]">{String(label)}</p>
-                  <p className="truncate font-bold text-[#08245c]">{String(value)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ContactInfoList
+            location={profile.location}
+            email={profile.email}
+            phone={profile.phone}
+            linkedinUrl={profile.linkedinUrl}
+            githubUrl={profile.githubUrl}
+          />
         </div>
 
         <ContactMessageForm />

@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { LockKeyhole, Mail, MoreHorizontal } from 'lucide-react';
-import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { LockKeyhole, MoreHorizontal } from 'lucide-react';
 import { SiNextdotjs, SiReact, SiTailwindcss, SiTypescript } from 'react-icons/si';
 import { profileRepository } from '@/repositories/profile.repository';
+import { SocialLinks } from '@/components/ui/social-links';
 
 const fallbackProfile = {
   email: 'ppsw.dev@gmail.com',
@@ -57,17 +57,7 @@ export async function PublicFooter() {
 
         <div className="border-white/45 md:border-l md:pl-12">
           <h3 className="mb-5 font-bold text-[#08245c]">Let&apos;s Connect</h3>
-          <div className="flex gap-3">
-            <a href={profile.linkedinUrl} className="glass-button grid size-12 place-items-center rounded-full text-[#0a66c2]">
-              <FaLinkedin className="size-6" />
-            </a>
-            <a href={profile.githubUrl} className="glass-button grid size-12 place-items-center rounded-full text-[#0a2b66]">
-              <FaGithub className="size-6" />
-            </a>
-            <a href={`mailto:${profile.email}`} className="glass-button grid size-12 place-items-center rounded-full text-[#0063ff]">
-              <Mail className="size-6" />
-            </a>
-          </div>
+          <SocialLinks linkedinUrl={profile.linkedinUrl} githubUrl={profile.githubUrl} email={profile.email} />
         </div>
       </div>
     </footer>

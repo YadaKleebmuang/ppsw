@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { ArrowRight, Mail, MapPin, MessageCircle } from 'lucide-react';
-import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { profileRepository } from '@/repositories/profile.repository';
 import { projectRepository } from '@/repositories/project.repository';
 import { techStackRepository } from '@/repositories/tech-stack.repository';
+import { SocialLinks } from '@/components/ui/social-links';
 
 export const revalidate = 60;
 
@@ -103,11 +103,13 @@ export default async function HomePage() {
         ))}
       </section>
 
-      <div className="mb-6 flex justify-center gap-4">
-        <a href={profile.linkedinUrl} className="glass-button grid size-11 place-items-center rounded-full text-[#0a66c2]"><FaLinkedin className="size-5" /></a>
-        <a href={profile.githubUrl} className="glass-button grid size-11 place-items-center rounded-full text-[#0a2b66]"><FaGithub className="size-5" /></a>
-        <a href={`mailto:${profile.email}`} className="glass-button grid size-11 place-items-center rounded-full text-[#0063ff]"><Mail className="size-5" /></a>
-      </div>
+      <SocialLinks
+        linkedinUrl={profile.linkedinUrl}
+        githubUrl={profile.githubUrl}
+        email={profile.email}
+        className="mb-6 justify-center gap-4"
+        iconClassName="size-11"
+      />
     </div>
   );
 }
